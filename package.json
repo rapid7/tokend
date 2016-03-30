@@ -1,0 +1,49 @@
+{
+  "name": "tokend",
+  "version": "0.0.1",
+  "description": "A secret and token management interface for Vault.",
+  "directories": {
+    "doc": "docs",
+    "bin": "bin"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rapid7/tokend.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rapid7/tokend/issues"
+  },
+  "homepage": "https://github.com/rapid7/tokend#readme",
+  "dependencies": {
+    "aws-sdk": "^2.2.47",
+    "express": "^4.13.4",
+    "lodash": "^4.6.1",
+    "morgan": "^1.7.0",
+    "nconf": "^0.8.4",
+    "vaulted": "^3.0.0",
+    "winston": "^2.2.0",
+    "yargs": "^4.3.2"
+  },
+  "devDependencies": {
+    "body-parser": "^1.15.0",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.3.0",
+    "coveralls": "^2.11.9",
+    "eslint": "^2.4.0",
+    "eslint-config-airbnb": "^6.2.0",
+    "eslint-config-rapid7": "0.0.15",
+    "eslint-plugin-rapid7": "^5.0.1",
+    "eslint-plugin-react": "^4.2.3",
+    "mocha": "^2.4.5",
+    "mocha-lcov-reporter": "^1.2.0",
+    "proxyquire": "^1.7.4",
+    "should": "^8.3.0",
+    "should-sinon": "0.0.5",
+    "sinon": "^1.17.3",
+    "supertest": "^1.2.0"
+  }
+}
