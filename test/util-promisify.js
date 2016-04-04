@@ -8,29 +8,27 @@ const promisify = require('../lib/utils/promisify');
 chai.use(require('chai-as-promised'));
 
 const fail = (callback) => {
-  throw new Error('asdf');
+  callback(Error('Some error message'), null);
 };
 
 const pass = (callback) => {
-  return {
+  callback(null, {
     foo: 'bar',
     baz: true
-  };
+  });
 };
 
 describe('Util/Promisify', () => {
   it('should wrap the method in a promise', () => {
-    promisify((done) => pass(done)).should.be.a.Promise();
+    promisify((c) => pass(c)).should.be.a.Promise();
   });
 
   it('should reject with an error if the promise-ified method returns one', () => {
-    promisify((c) => fail(c)).catch((err) => {
-      expect(err).to.be.Error();
-    })
+    return promisify((c) => fail(c)).should.be.rejectedWith(Error, {message: 'Some error message'});
   });
 
   it('should pass and return data if the promise-ified method returns a result', () => {
-    promisify((done) => pass(done)).should.eventually.eql({
+    return promisify((c) => pass(c)).should.eventually.eql({
       foo: 'bar',
       baz: true
     });
