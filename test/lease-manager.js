@@ -60,4 +60,15 @@ describe('LeaseManager#constructor', function () {
     manager.initialize();
     return Promise.resolve(manager.data).should.eventually.eql('SECRET');
   });
+
+  it('emits ready event when the provider succeeds', function (done) {
+    const manager = new LeaseManager(new CountingInitializeProvider(2));
+
+    manager.on('ready', function () {
+      should(manager.data).eql('SECRET');
+      done();
+    });
+
+    manager.initialize();
+  });
 });
