@@ -5,26 +5,6 @@ const should = require('should');
 const LeaseManager = require('../lib/lease-manager');
 
 /**
- * A mock SecretProvider that does nothing on initialize or renew
- */
-class DoNothingProvider {
-  initialize() {
-  }
-
-  renew() {
-  }
-}
-
-/**
- * A mock SecretProvider that succeeds on initialize
- */
-class InitializeSucceedProvider {
-  initialize(callback) {
-    callback(null, 'SECRET');
-  }
-}
-
-/**
  * A mock SecretProvider that fails to initialize N times before succeeding
  */
 class CountingInitializeProvider {
@@ -46,22 +26,22 @@ class CountingInitializeProvider {
 
 describe('LeaseManager#constructor', function () {
   it('has a default status of PENDING', function () {
-    should(new LeaseManager(new DoNothingProvider()).status).eql('PENDING');
+    should(new LeaseManager().status).eql('PENDING');
   });
 
   it('has default data that is null', function () {
-    should(new LeaseManager(new DoNothingProvider()).data).be.null();
+    should(new LeaseManager().data).be.null();
   });
 
-  it('changes status to READY when the provider succeeds', function () {
-    const manager = new LeaseManager(new InitializeSucceedProvider());
+  it('changes status to READY when the provider immediately succeeds', function () {
+    const manager = new LeaseManager(new CountingInitializeProvider(0));
 
     manager.initialize();
     return Promise.resolve(manager.status).should.eventually.eql('READY');
   });
 
-  it('changes data to a secret when the provider succeeds', function () {
-    const manager = new LeaseManager(new InitializeSucceedProvider());
+  it('changes data to a secret when the provider immediately succeeds', function () {
+    const manager = new LeaseManager(new CountingInitializeProvider(0));
 
     manager.initialize();
     return Promise.resolve(manager.data).should.eventually.eql('SECRET');
