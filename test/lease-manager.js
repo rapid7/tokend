@@ -24,6 +24,26 @@ class InitializeSucceedProvider {
   }
 }
 
+/**
+ * A mock SecretProvider that fails to initialize N times before succeeding
+ */
+class CountingInitializeProvider {
+
+  constructor(count) {
+    this.count = count;
+  }
+
+  initialize(callback) {
+    if (this.count > 1) {
+      this.count -= 1;
+      callback(new Error(`Need ${this.count} more calls to initialize`), null);
+    }
+    else {
+      callback(null, 'SECRET');
+    }
+  }
+}
+
 describe('LeaseManager#constructor', function () {
   it('has a default status of PENDING', function () {
     should(new LeaseManager(new DoNothingProvider()).status).eql('PENDING');
@@ -34,10 +54,30 @@ describe('LeaseManager#constructor', function () {
   });
 
   it('changes status to READY when the provider succeeds', function () {
-    should(new LeaseManager(new InitializeSucceedProvider()).status).eql('READY');
+    const manager = new LeaseManager(new InitializeSucceedProvider());
+
+    manager.initialize();
+    return Promise.resolve(manager.status).should.eventually.eql('READY');
   });
 
   it('changes data to a secret when the provider succeeds', function () {
-    should(new LeaseManager(new InitializeSucceedProvider()).data).eql('SECRET');
+    const manager = new LeaseManager(new InitializeSucceedProvider());
+
+    manager.initialize();
+    return Promise.resolve(manager.data).should.eventually.eql('SECRET');
+  });
+
+  it('change status to ready when the provider eventually succeeds', function () {
+    const manager = new LeaseManager(new CountingInitializeProvider(2));
+
+    manager.initialize();
+    return Promise.resolve(manager.status).should.eventually.eql('READY');
+  });
+
+  it('change data to a secret when the provider eventually succeeds', function () {
+    const manager = new LeaseManager(new CountingInitializeProvider(2));
+
+    manager.initialize();
+    return Promise.resolve(manager.data).should.eventually.eql('SECRET');
   });
 });
