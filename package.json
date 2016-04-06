@@ -7,8 +7,10 @@
     "bin": "bin"
   },
   "scripts": {
+    "test": "mocha",
     "lint": "eslint bin/** lib/** test/**",
-    "test": "mocha"
+    "coverage": "istanbul cover _mocha -- -R spec",
+    "report-coverage": "npm run coverage && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage"
   },
   "repository": {
     "type": "git",
@@ -39,6 +41,7 @@
     "eslint-config-rapid7": "0.0.15",
     "eslint-plugin-rapid7": "^5.0.1",
     "eslint-plugin-react": "^4.2.3",
+    "istanbul": "^0.4.2",
     "mocha": "^2.4.5",
     "mocha-lcov-reporter": "^1.2.0",
     "proxyquire": "^1.7.4",
