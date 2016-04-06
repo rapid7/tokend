@@ -53,9 +53,9 @@ describe('Provider/Token', function() {
       token._client.config.get('vault_port').should.equal(VAULT_PORT);
       token._client.config.get('vault_ssl').should.equal(true);
 
-      token.warden.should.be.Object();
-      token.warden.hostname.should.equal('wardenurl.net');
-      token.warden.port.should.equal(WARDEN_PORT);
+      token._warden.should.be.Object();
+      token._warden.hostname.should.equal('wardenurl.net');
+      token._warden.port.should.equal(WARDEN_PORT);
     });
 
     it('Can instantiate dependent services by passing instances of them via options', function() {
@@ -87,9 +87,9 @@ describe('Provider/Token', function() {
       token._client.config.get('vault_port').should.equal(8200); // eslint-disable-line rapid7/static-magic-numbers
       token._client.config.get('vault_ssl').should.equal(true);
 
-      token.warden.should.be.Object();
-      token.warden.hostname.should.equal('127.0.0.1');
-      token.warden.port.should.equal(3000); // eslint-disable-line rapid7/static-magic-numbers
+      token._warden.should.be.Object();
+      token._warden.hostname.should.equal('127.0.0.1');
+      token._warden.port.should.equal(3000); // eslint-disable-line rapid7/static-magic-numbers
     });
   });
 
