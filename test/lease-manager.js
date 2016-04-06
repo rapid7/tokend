@@ -19,7 +19,7 @@ class CountingInitializeProvider {
       callback(new Error(`Need ${this.count} more calls to initialize`), null);
     }
     else {
-      callback(null, 'SECRET');
+      callback(null, {data: 'SECRET'});
     }
   }
 }
