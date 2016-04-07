@@ -27,6 +27,35 @@ class CountingInitializeProvider {
   }
 }
 
+/**
+ * A mock SecretProvider that fails to renew N times before succeeding
+ */
+class CountingRenewProvider {
+
+  constructor(count) {
+    this.count = count;
+  }
+
+  initialize(callback) {
+    callback(null, {
+      data: 'SECRET',
+      lease_duration: 1
+    });
+  }
+
+  renew(callback) {
+    if (this.count > 1) {
+      this.count -= 1;
+      callback(new Error(`Need ${this.count} more calls to renew`), null);
+    }
+    else {
+      callback(null, {
+        lease_duration: 2
+      });
+    }
+  }
+}
+
 describe('LeaseManager#constructor', function () {
   it('has a default status of PENDING', function () {
     should(new LeaseManager().status).eql('PENDING');
@@ -87,6 +116,30 @@ describe('LeaseManager#constructor', function () {
 
     manager.on('ready', function () {
       should(manager.data).eql('SECRET');
+      done();
+    });
+
+    manager.initialize();
+  });
+});
+
+describe('LeaseManager#_renew', function () {
+  it('changes lease duration when the provider immediately renews', function (done) {
+    const manager = new LeaseManager(new CountingRenewProvider(0));
+
+    manager.once('renewed', () => {
+      should(manager.lease_duration).eql(2);
+      done();
+    });
+
+    manager.initialize();
+  });
+
+  it('changes lease duration when the provider eventually renews', function (done) {
+    const manager = new LeaseManager(new CountingRenewProvider(0));
+
+    manager.once('renewed', () => {
+      should(manager.lease_duration).eql(2);
       done();
     });
 
