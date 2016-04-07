@@ -139,7 +139,7 @@ describe('LeaseManager#_renew', function () {
   });
 
   it('changes lease duration when the provider eventually renews', function (done) {
-    const manager = new LeaseManager(new CountingRenewProvider(0));
+    const manager = new LeaseManager(new CountingRenewProvider(2));
 
     manager.once('renewed', () => {
       should(manager.lease_duration).eql(2);
