@@ -25,6 +25,9 @@ class CountingInitializeProvider {
       });
     }
   }
+
+  renew() {
+  }
 }
 
 /**
