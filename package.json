@@ -23,6 +23,7 @@
   "homepage": "https://github.com/rapid7/tokend#readme",
   "dependencies": {
     "aws-sdk": "^2.2.47",
+    "conditional": "^5.3.0",
     "express": "^4.13.4",
     "lodash": "^4.6.1",
     "morgan": "^1.7.0",
