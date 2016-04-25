@@ -1,4 +1,3 @@
-/* eslint max-nested-callbacks:0 */
 'use strict';
 
 const should = require('should');
