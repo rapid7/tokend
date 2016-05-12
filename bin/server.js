@@ -21,3 +21,4 @@ global.Config = require('nconf')
 if (args.c) {
   global.Config.file(path.resolve(process.cwd(), args.c));
 }
+global.Config.defaults(require('../config/defaults.json'));
