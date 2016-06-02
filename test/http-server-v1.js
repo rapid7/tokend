@@ -70,6 +70,7 @@ describe('v1 API', function () {
       util.testEndpointResponse(endpoint, (err, res) => {
         res.body.should.have.property('uptime');
         res.body.should.have.property('status');
+        res.body.should.have.property('version');
         done();
       });
     });
