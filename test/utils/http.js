@@ -1,9 +1,7 @@
 'use strict';
 
 const request = require('supertest');
-
-const HTTP_OK = 200;
-const HTTP_METHOD_NOT_ALLOWED = 405;
+const STATUS_CODES = require('../../lib/control/util/status-codes');
 
 class HttpTestUtils {
   /**
@@ -20,7 +18,7 @@ class HttpTestUtils {
    * @returns {Test}
    */
   acceptGETRequest(endpoint) {
-    return this.request(endpoint, 'GET', HTTP_OK);
+    return this.request(endpoint, 'GET', STATUS_CODES.OK);
   }
 
   /**
@@ -29,9 +27,9 @@ class HttpTestUtils {
    * @returns {Test}
    */
   rejectOtherRequests(endpoint) {
-    this.request(endpoint, 'POST', HTTP_METHOD_NOT_ALLOWED);
-    this.request(endpoint, 'PUT', HTTP_METHOD_NOT_ALLOWED);
-    return this.request(endpoint, 'DELETE', HTTP_METHOD_NOT_ALLOWED);
+    this.request(endpoint, 'POST', STATUS_CODES.METHOD_NOT_ALLOWED);
+    this.request(endpoint, 'PUT', STATUS_CODES.METHOD_NOT_ALLOWED);
+    return this.request(endpoint, 'DELETE', STATUS_CODES.METHOD_NOT_ALLOWED);
   }
 
   /**
@@ -41,7 +39,7 @@ class HttpTestUtils {
    * @returns {Test}
    */
   testEndpointResponse(endpoint, callback) {
-    return this.request(endpoint, 'GET', HTTP_OK).end(callback);
+    return this.request(endpoint, 'GET', STATUS_CODES.OK).end(callback);
   }
 
   /**
@@ -75,8 +73,8 @@ class HttpTestUtils {
         break;
     }
 
-    r = (code === HTTP_OK) ? r.expect('Content-Type', 'application/json; charset=utf-8') : r;
-    r = (code === HTTP_METHOD_NOT_ALLOWED) ? r.expect('Allow', 'GET') : r;
+    r = (code === STATUS_CODES.OK) ? r.expect('Content-Type', 'application/json; charset=utf-8') : r;
+    r = (code === STATUS_CODES.METHOD_NOT_ALLOWED) ? r.expect('Allow', 'GET') : r;
 
     return r
       .set('Accept', 'application/json')
