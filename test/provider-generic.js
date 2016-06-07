@@ -44,8 +44,14 @@ describe('Provider/Generic', function () {
     nock.removeInterceptor(scope);
   });
 
-  it('throws an IllegalValueError if the path and token are not provided in the constructor', function () {
-    (() => new GenericProvider()).should.throw(preconditions.IllegalValueError);
+  describe('GenericProvider#constructor', function () {
+    it('throws an IllegalValueError if the path is not provided in the constructor', function () {
+      (() => new GenericProvider('', 'totally-not-a-token')).should.throw(preconditions.IllegalValueError);
+    });
+
+    it('throws an IllegalValueError if the token is not provided in the constructor', function () {
+      (() => new GenericProvider('path-to-secret', '')).should.throw(preconditions.IllegalValueError);
+    });
   });
 
   it('can only be initialized once', function (done) {
