@@ -7,9 +7,9 @@
     "bin": "bin"
   },
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --require ./test/init",
     "lint": "eslint bin/** lib/** test/**",
-    "coverage": "istanbul cover _mocha -- -R spec",
+    "coverage": "istanbul cover _mocha -- -R spec --require ./test/init",
     "report-coverage": "npm run coverage && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage"
   },
   "repository": {

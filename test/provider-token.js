@@ -5,13 +5,12 @@ const sinon = require('sinon');
 const should = require('should');
 const nock = require('nock');
 const AWS = require('aws-sdk');
+const STATUS_CODES = require('./../lib/control/util/status-codes');
 const Vaulted = require('vaulted');
 const TokenProvider = require('../lib/providers/token');
 
 const VAULT_PORT = 3030;
 const WARDEN_PORT = 8080;
-const HTTP_OK = 200;
-const HTTP_BAD_REQUEST = 400;
 
 chai.use(require('chai-as-promised'));
 
@@ -123,7 +122,7 @@ describe('Provider/Token', function() {
         data: {token: 'somereallycooltoken'}
       };
 
-      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(HTTP_OK, resp);
+      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
 
       this.token._getDocument().then(this.token._sendDocument.bind(this.token)).should.eventually.eql(resp);
     });
@@ -135,7 +134,7 @@ describe('Provider/Token', function() {
         data: {token: 'somereallycooltoken'}
       };
 
-      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(HTTP_OK, resp);
+      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
 
       this.token.initialize((err, data) => {
         try {
@@ -190,7 +189,7 @@ describe('Provider/Token', function() {
       nock(`http://${this.warden.host}:${this.warden.port}/`)
         .post()
         .once()
-        .reply(HTTP_OK, {this: 'is', bad: 'response'});
+        .reply(STATUS_CODES.OK, {this: 'is', bad: 'response'});
 
       this.token.initialize((err, data) => {
         try {
@@ -209,13 +208,13 @@ describe('Provider/Token', function() {
       nock(`http://${this.warden.host}:${this.warden.port}/`)
           .post()
           .once()
-          .reply(HTTP_BAD_REQUEST, resp);
+          .reply(STATUS_CODES.BAD_REQUEST, resp);
 
       this.token.initialize((err, data) => {
         try {
           should(data).be.null();
           err.should.be.an.Error();
-          err.message.should.equal(`${HTTP_BAD_REQUEST}: ${JSON.stringify(resp)}`);
+          err.message.should.equal(`${STATUS_CODES.BAD_REQUEST}: ${JSON.stringify(resp)}`);
           done();
         } catch (ex) {
           done(ex);
@@ -235,13 +234,13 @@ describe('Provider/Token', function() {
       this.token = setup.token;
       scope = nock(`http://127.0.0.1:${VAULT_PORT}/`)
           .get('/v1/sys/init')
-          .reply(HTTP_OK, {initialized: true})
+          .reply(STATUS_CODES.OK, {initialized: true})
           .get('/v1/sys/seal-status')
-          .reply(HTTP_OK, {sealed: false, t: 1, n: 1, progress: 1})
+          .reply(STATUS_CODES.OK, {sealed: false, t: 1, n: 1, progress: 1})
           .get('/v1/sys/mounts')
-          .reply(HTTP_OK, {'secret/': {config: {default_lease_ttl: 0, max_lease_ttl: 0}, type: 'generic'}})
+          .reply(STATUS_CODES.OK, {'secret/': {config: {default_lease_ttl: 0, max_lease_ttl: 0}, type: 'generic'}})
           .get('/v1/sys/auth')
-          .reply(HTTP_OK, {'token/': {type: 'token'}});
+          .reply(STATUS_CODES.OK, {'token/': {type: 'token'}});
     });
 
     afterEach(function() {
@@ -254,7 +253,7 @@ describe('Provider/Token', function() {
       const lease_duration = 300;
 
       scope.post('/v1/auth/token/renew/somereallycooltoken')
-        .reply(HTTP_OK, {
+        .reply(STATUS_CODES.OK, {
           auth: {client_token: 'somereallycooltoken', policies: [], metadata: {}, lease_duration, renewable: true}
         });
       this.token.token = 'somereallycooltoken';
@@ -272,7 +271,7 @@ describe('Provider/Token', function() {
 
     it('Executes the callback with an error if the token cannot be renewed', function(done) {
       scope.post('/v1/auth/token/renew/somereallycooltoken')
-        .reply(HTTP_BAD_REQUEST, {errors: ['This token cannot be renewed']});
+        .reply(STATUS_CODES.BAD_REQUEST, {errors: ['This token cannot be renewed']});
       this.token.token = 'somereallycooltoken';
 
       this.token.renew((err, data) => {
