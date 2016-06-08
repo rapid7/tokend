@@ -72,54 +72,62 @@ describe('Provider/Generic', function () {
 
   describe('Valid secrets', function() {
     it('executes the callback with the secret when initialized with a valid path and token', function (done) {
-      scope.get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, Object.assign({
+      const expectedResponse = Object.assign({
         data: {value: 'coolvalue'},
         lease_duration: 2592000
-      }, resp));
+      }, resp);
+
+      scope.get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, expectedResponse);
 
       const g = new GenericProvider('coolsecret', 'a-valid-token');
 
       return promisify((d) => g.initialize(d))
-        .then((data) => data.should.eql({value: 'coolvalue'}))
+        .then((data) => data.should.eql(expectedResponse))
         .then(() => done())
         .catch((err) => done(err));
     });
 
     it('executes the callback with the cached secret if the secret TTL has not expired', function (done) {
-      scope
-        .get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, Object.assign({
-          data: {value: 'coolvalue'},
-          lease_duration: 2592000
-        }, resp));
+      const expectedResponse = Object.assign({
+        data: {value: 'coolvalue'},
+        lease_duration: 2592000
+      }, resp);
+
+      scope.get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, expectedResponse);
 
       const g = new GenericProvider('coolsecret', 'a-valid-token');
       const cachedSecret = {value: 'coolvalue'};
 
       return promisify((d) => g.initialize(d))
-        .then((data) => data.should.eql(cachedSecret))
-        .then(g.renew.bind(g, ((err, data) => data.should.eql(cachedSecret))))
+        .then((data) => {
+          return data.should.eql(expectedResponse);
+        })
+        .then(g.renew.bind(g, ((err, data) => {
+          return data.should.eql(expectedResponse);
+        })))
         .then(() => done())
         .catch((err) => done(err));
     });
 
     it('attempts to re-read the secret if the secret TTL has expired', function (done) {
-      scope
-        .get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, Object.assign({
-          data: {value: 'coolvalue'},
-          lease_duration: 0
-        }, resp))
-        .get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, Object.assign({
-          data: {value: 'coolvalue2'},
-          lease_duration: 2592000
-        }, resp));
+      const expectedResponse1 = Object.assign({
+        data: {value: 'coolvalue'},
+        lease_duration: 0
+      }, resp);
+      const expectedResponse2 = Object.assign({
+        data: {value: 'coolvalue2'},
+        lease_duration: 2592000
+      }, resp);
+      scope.get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, expectedResponse1)
+        .get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, expectedResponse2);
 
       const g = new GenericProvider('coolsecret', 'a-valid-token');
 
       return promisify((d) => g.initialize(d))
-          .then((data) => data.should.eql({value: 'coolvalue'}))
+          .then((data) => data.should.eql(expectedResponse1))
           .then(() => g.renew(((err, data) => {
             should(err).equal(null);
-            data.should.eql({value: 'coolvalue2'});
+            data.should.eql(expectedResponse2);
           })))
           .then(done)
           .catch((err) => done(err));
