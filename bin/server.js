@@ -1,11 +1,8 @@
 #!/usr/bin/env node
 
-/* global Config */
+/* global Config, Log */
 'use strict';
 
-const path = require('path');
-const http = require('http');
-const express = require('express');
 const args = require('yargs')
   .usage('Usage: $0 [args]')
   .option('c', {
@@ -16,24 +13,39 @@ const args = require('yargs')
   .help('help')
   .argv;
 
-global.Config = require('nconf')
-  .env()
-  .argv();
+const express = require('express');
+const HTTP = require('http');
+const Path = require('path');
+
+const app = express();
+const server = HTTP.createServer(app);
+
+// Load nconf into the global namespace
+global.Config = require('nconf').env()
+  .argv({
+    config: {
+      alias: 'c',
+      default: '/etc/tokend/config.json',
+      describe: 'Path to local tokend configuration'
+    }
+  });
 
 if (args.c) {
-  global.Config.file(path.resolve(process.cwd(), args.c));
+  Config.file(Path.resolve(process.cwd(), args.c));
 }
-global.Config.defaults(require('../config/defaults.json'));
+Config.defaults(require('../config/defaults.json'));
+
+global.Log = {};
 
 const StorageService = require('../lib/storage-service');
-const app = express();
 
-require('../lib/control/v1').attach(app, new StorageService());
+const storage = new StorageService();
+
+require('../lib/control/v1').attach(app, storage);
 
 // Instantiate server and start it
 const host = Config.get('service:host');
 const port = Config.get('service:port');
-const server = http.createServer(app);
 
 server.on('error', (err) => console.error(err));
 
