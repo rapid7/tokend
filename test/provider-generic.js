@@ -118,6 +118,7 @@ describe('Provider/Generic', function () {
         data: {value: 'coolvalue2'},
         lease_duration: 2592000
       }, resp);
+
       scope.get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, expectedResponse1)
         .get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, expectedResponse2);
 
