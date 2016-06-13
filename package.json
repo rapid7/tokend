@@ -7,6 +7,7 @@
     "bin": "bin"
   },
   "scripts": {
+    "start": "node ./bin/server.js",
     "test": "mocha --require ./test/init",
     "lint": "eslint bin/** lib/** test/**",
     "coverage": "istanbul cover _mocha -- -R spec --require ./test/init",
