@@ -93,9 +93,7 @@ describe('v1 API', function () {
       util = new HttpTestUtils(server);
 
       util.testEndpointResponse(endpoint, (err, res) => {
-        res.body.should.eql({
-          token: 'token'
-        });
+        res.body.should.eql('token');
         done();
       });
     });
