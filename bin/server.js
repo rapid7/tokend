@@ -16,6 +16,7 @@ const args = require('yargs')
 const express = require('express');
 const HTTP = require('http');
 const Path = require('path');
+const Logger = require('../lib/logger');
 
 const app = express();
 const server = HTTP.createServer(app);
@@ -35,7 +36,10 @@ if (args.c) {
 }
 Config.defaults(require('../config/defaults.json'));
 
-global.Log = {};
+global.Log = Logger.attach(Config.get('log:level'));
+
+// Add request logging middleware
+app.use(Logger.requests(Log, Config.get('log:level')));
 
 const StorageService = require('../lib/storage-service');
 
@@ -47,8 +51,11 @@ require('../lib/control/v1').attach(app, storage);
 const host = Config.get('service:host');
 const port = Config.get('service:port');
 
-server.on('error', (err) => console.error(err));
+server.on('error', (err) => {
+  Log.log('ERROR', err);
+});
 
 server.listen(port, host, () => {
-  console.log(`Listening on ${host}:${port}`);
+  Log.log('INFO', `Listening on ${host}:${port}`);
 });
+
