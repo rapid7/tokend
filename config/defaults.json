@@ -2,7 +2,8 @@
   "vault": {
     "host": "127.0.0.1",
     "port": 8200,
-    "tls": true
+    "tls": true,
+    "token_ttl": "1m"
   },
   "metadata": {
     "host": "169.254.169.254"
