@@ -4,6 +4,7 @@ const should = require('should');
 
 const LeaseManager = require('../lib/lease-manager');
 const StorageService = require('../lib/storage-service');
+const SecretProvider = require('../lib/providers/secret');
 
 /**
  * A mock SecretProvider that fails to initialize N times before succeeding
@@ -24,6 +25,20 @@ class DelayedInitializeProvider {
 
   initialize(callback) {
     setTimeout(() => callback(null, {data: 'SECRET'}), this.delay);
+  }
+}
+
+class MockTokenProvider {
+  initialize(callback){
+    callback(null, {
+      data: {
+        token: 'some-token'
+      }
+    });
+  }
+
+  renew(callback) {
+    callback(null, {data: 'SECRET'})
   }
 }
 
@@ -74,7 +89,7 @@ describe('StorageService', function() {
     });
 
     it('should timeout lookup calls if LeaseManager is not ready', function (done) {
-      const timeout = 500;
+      const timeout = 5;
       const storage = new StorageService({timeout});
 
       storage.lookup('secret', function(err, data) {
@@ -132,6 +147,40 @@ describe('StorageService', function() {
       storage.lookup(secret, callback);
 
       manager.initialize();
+    });
+
+    it('should instantiate the correct provider type based on the requested secret', function (done) {
+      const secret = '/v1/secret/default/secret/acoolsecret';
+      const manager = new LeaseManager(new MockTokenProvider());
+      const storage = new StorageService();
+
+      manager.initialize();
+      manager.status = 'READY';
+      storage._managers.set('/v1/token/default', manager);
+
+      storage.lookup(secret, (err, data) => {
+        const secretManager = storage._managers.get(secret);
+
+        secretManager.status = 'READY';
+        secretManager.provider.should.be.instanceof(SecretProvider);
+        done();
+      });
+    });
+
+    it('should throw an error if an unsupported secret mount is requested', function (done) {
+      const secret = '/v1/secret/default/notarealmountpoint/acoolsecret';
+      const provider = new MockTokenProvider();
+      const manager = new LeaseManager(provider);
+      const storage = new StorageService();
+
+      manager.initialize();
+      manager.status = 'READY';
+      storage._managers.set('/v1/token/default', manager);
+
+      should.throws(() => {
+        storage.lookup(secret, (err, data) => {});
+      }, Error, 'Unsupported secret backend');
+      done();
     });
   });
 });
