@@ -97,6 +97,19 @@ describe('v1 API', function () {
         done();
       });
     });
+
+    it('returns an error if the token cannot be retrieved', function (done) {
+      server.close();
+      server = makeServer(new StorageServiceMockWithError());
+      util = new HttpTestUtils(server);
+
+      util.testEndpointResponse(endpoint, (err, res) => {
+        res.body.should.eql({
+          error: 'Funky looking error message'
+        });
+        done();
+      });
+    });
   });
 
   describe('/v1/secret/default/:mount/:role endpoint', function() {
