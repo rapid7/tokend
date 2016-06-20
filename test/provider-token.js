@@ -261,7 +261,7 @@ describe('Provider/Token', function() {
       this.token.renew((err, data) => {
         try {
           should(err).be.null();
-          data.should.eql({lease_duration, token: 'somereallycooltoken'});
+          data.should.eql({lease_duration, data: {token: 'somereallycooltoken'}});
           done();
         } catch (ex) {
           done(ex);

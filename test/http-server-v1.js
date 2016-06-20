@@ -93,8 +93,19 @@ describe('v1 API', function () {
       util = new HttpTestUtils(server);
 
       util.testEndpointResponse(endpoint, (err, res) => {
+        res.body.should.eql('token');
+        done();
+      });
+    });
+
+    it('returns an error if the token cannot be retrieved', function (done) {
+      server.close();
+      server = makeServer(new StorageServiceMockWithError());
+      util = new HttpTestUtils(server);
+
+      util.testEndpointResponse(endpoint, (err, res) => {
         res.body.should.eql({
-          token: 'token'
+          error: 'Funky looking error message'
         });
         done();
       });
