@@ -116,7 +116,7 @@ describe('v1 API', function () {
     });
   });
 
-  describe('/v1/secret/default/:mount/:role endpoint', function() {
+  describe('/v1/secret/:token/:path endpoint', function() {
     const endpoint = '/v1/secret/default/foo/bar';
 
     it('accepts GET requests', function(done) {
