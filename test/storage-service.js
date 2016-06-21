@@ -25,6 +25,14 @@ class DelayedInitializeProvider {
   initialize(callback) {
     setTimeout(() => callback(null, {data: 'SECRET'}), this.delay);
   }
+
+  renew(callback) {}
+}
+
+class NeverInitializeProvider {
+  initialize(callback) {}
+
+  renew(callback) {}
 }
 
 describe('StorageService', function() {
@@ -49,7 +57,7 @@ describe('StorageService', function() {
       manager.initialize();
       storage._managers.set(secret, manager);
 
-      storage.lookup(secret, function(err, data) {
+      storage.lookup(secret, ImmediateInitializeProvider, function(err, data) {
         should(err).eql(null);
         should(data).eql('SECRET');
         done();
@@ -64,7 +72,7 @@ describe('StorageService', function() {
 
       storage._managers.set(secret, manager);
 
-      storage.lookup(secret, function(err, data) {
+      storage.lookup(secret, DelayedInitializeProvider, function(err, data) {
         should(err).eql(null);
         should(data).eql('SECRET');
         done();
@@ -77,7 +85,7 @@ describe('StorageService', function() {
       const timeout = 500;
       const storage = new StorageService({timeout});
 
-      storage.lookup('secret', function(err, data) {
+      storage.lookup('secret', NeverInitializeProvider, function (err, data) {
         should(err).be.an.Error();
         should(err.message).eql('timeout: \'ready\' event');
         should(data).eql(null);
@@ -105,8 +113,8 @@ describe('StorageService', function() {
       manager.initialize();
       storage._managers.set(secret, manager);
 
-      storage.lookup(secret, callback);
-      storage.lookup(secret, callback);
+      storage.lookup(secret, ImmediateInitializeProvider, callback);
+      storage.lookup(secret, ImmediateInitializeProvider, callback);
     });
 
     it('should call the same callback multiple times if provided more than once when manager becomes ready', function (done) {
@@ -128,8 +136,8 @@ describe('StorageService', function() {
 
       storage._managers.set(secret, manager);
 
-      storage.lookup(secret, callback);
-      storage.lookup(secret, callback);
+      storage.lookup(secret, DelayedInitializeProvider, callback);
+      storage.lookup(secret, DelayedInitializeProvider, callback);
 
       manager.initialize();
     });
