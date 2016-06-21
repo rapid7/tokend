@@ -24,7 +24,7 @@ function setUp() {
   const m = new AWS.MetadataService({host: '10.10.10.10'});
   const v = new Vaulted({vault_host: '127.0.0.1', vault_port: VAULT_PORT, vault_ssl: false});
   const warden = {host: '127.0.0.1', port: WARDEN_PORT};
-  const token = new TokenProvider({metadata: {client: m}, vault: {client: v}, warden});
+  const token = new TokenProvider('', '', {metadata: {client: m}, vault: {client: v}, warden});
 
   return {
     warden,
@@ -38,7 +38,7 @@ describe('Provider/Token', function() {
 
   describe('TokenProvider#constructor', function() {
     it('Can instantiate dependent services configured with options', function() {
-      const token = new TokenProvider({
+      const token = new TokenProvider('', '', {
         metadata: {host: '10.10.10.10'},
         vault: {host: 'vaultserver.com', port: VAULT_PORT, ssl: true},
         warden: {host: 'wardenurl.net', port: WARDEN_PORT}
@@ -60,7 +60,7 @@ describe('Provider/Token', function() {
     it('Can instantiate dependent services by passing instances of them via options', function() {
       const m = new AWS.MetadataService({host: '10.10.10.10'});
       const v = new Vaulted({vault_host: 'vaultserver.com', vault_port: VAULT_PORT, vault_ssl: true});
-      const token = new TokenProvider({
+      const token = new TokenProvider('', '', {
         metadata: {client: m},
         vault: {client: v},
         warden: {host: 'wardenurl.net', port: WARDEN_PORT}
@@ -76,7 +76,7 @@ describe('Provider/Token', function() {
     });
 
     it('Falls back on defaults if options aren\'t provided', function() {
-      const token = new TokenProvider();
+      const token = new TokenProvider('', '');
 
       token._metadata.should.be.instanceof(AWS.MetadataService);
       token._metadata.host.should.equal('169.254.169.254');
@@ -158,7 +158,7 @@ describe('Provider/Token', function() {
         httpOptions: {timeout: 200} // eslint-disable-line rapid7/static-magic-numbers
       });
       const v = new Vaulted({vault_host: '127.0.0.1', vault_port: VAULT_PORT, vault_ssl: true});
-      const token = new TokenProvider({metadata: {client: m}, vault: {client: v}, warden: this.warden});
+      const token = new TokenProvider('', '', {metadata: {client: m}, vault: {client: v}, warden: this.warden});
 
       nock('http://169.254.169.254').get('/').thrice();
 

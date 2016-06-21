@@ -5,20 +5,24 @@ const StorageService = require('../lib/storage-service');
 const HttpTestUtils = require('./utils/http');
 const testServerPort = 3000;
 
+class MockProvider {
+  constructor() {}
+}
+
 class StorageServiceMock {
-  lookup(endpoint, callback) {
+  lookup(endpoint, MockProvider, callback) {
     callback(null, null);
   }
 }
 
 class StorageServiceMockWithTokenResponse {
-  lookup(endpoint, callback) {
+  lookup(endpoint, MockProvider, callback) {
     callback(null, 'token');
   }
 }
 
 class StorageServiceMockWithSecretResponse {
-  lookup(endpoint, callback) {
+  lookup(endpoint, MockProvider, callback) {
     callback(null, {
       username: 'bob',
       password: 'my-awesome-password123'
@@ -27,7 +31,7 @@ class StorageServiceMockWithSecretResponse {
 }
 
 class StorageServiceMockWithError {
-  lookup(endpoint, callback) {
+  lookup(endpoint, MockProvider, callback) {
     callback(new Error('Funky looking error message'), null);
   }
 }
