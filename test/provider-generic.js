@@ -62,6 +62,10 @@ describe('Provider/Generic', function () {
 
     const g = new GenericProvider('coolsecret', 'a-valid-token');
 
+    // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
+    // the right endpoint we need to provide the method name to read the secret endpoint.
+    g._method = 'read';
+
     return promisify((d) => g.initialize(d))
       .then(() => g.initialize((err, data) => {
         should(err).be.Error('Already initialized');
@@ -81,6 +85,10 @@ describe('Provider/Generic', function () {
 
       const g = new GenericProvider('coolsecret', 'a-valid-token');
 
+      // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
+      // the right endpoint we need to provide the method name to read the secret endpoint.
+      g._method = 'read';
+
       return promisify((d) => g.initialize(d))
         .then((data) => data.should.eql(expectedResponse))
         .then(() => done())
@@ -89,7 +97,7 @@ describe('Provider/Generic', function () {
 
     it('attempts to re-read the secret when renewed', function (done) {
       const expectedResponse = Object.assign({
-        data: {value: 'coolvalue2'},
+        data: {value: 'coolvalue'},
         lease_duration: 2592000
       }, resp);
 
@@ -98,14 +106,19 @@ describe('Provider/Generic', function () {
 
       const g = new GenericProvider('coolsecret', 'a-valid-token');
 
+      // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
+      // the right endpoint we need to provide the method name to read the secret endpoint.
+      g._method = 'read';
+
       return promisify((d) => g.initialize(d))
-          .then((data) => data.should.eql(expectedResponse))
-          .then(() => g.renew(((err, data) => {
-            should(err).equal(null);
-            data.should.eql(expectedResponse);
-          })))
-          .then(done)
-          .catch((err) => done(err));
+        .then((data) => {
+          return data.should.eql(expectedResponse);
+        })
+        .then(g.renew.bind(g, ((err, data) => {
+          return data.should.eql(expectedResponse);
+        })))
+        .then(() => done())
+        .catch((err) => done(err));
     });
   });
 
@@ -121,6 +134,10 @@ describe('Provider/Generic', function () {
 
     it('executes the callback with an error if the path or token is invalid', function (done) {
       const g = new GenericProvider('notasecret', 'a-valid-token');
+
+      // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
+      // the right endpoint we need to provide the method name to read the secret endpoint.
+      g._method = 'read';
 
       g.initialize((err, data) => {
         should(data).be.null();
