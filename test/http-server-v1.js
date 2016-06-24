@@ -5,20 +5,24 @@ const StorageService = require('../lib/storage-service');
 const HttpTestUtils = require('./utils/http');
 const testServerPort = 3000;
 
+class MockProvider {
+  constructor() {}
+}
+
 class StorageServiceMock {
-  lookup(endpoint, callback) {
+  lookup(endpoint, MockProvider, callback) {
     callback(null, null);
   }
 }
 
 class StorageServiceMockWithTokenResponse {
-  lookup(endpoint, callback) {
+  lookup(endpoint, MockProvider, callback) {
     callback(null, 'token');
   }
 }
 
 class StorageServiceMockWithSecretResponse {
-  lookup(endpoint, callback) {
+  lookup(endpoint, MockProvider, callback) {
     callback(null, {
       username: 'bob',
       password: 'my-awesome-password123'
@@ -27,7 +31,7 @@ class StorageServiceMockWithSecretResponse {
 }
 
 class StorageServiceMockWithError {
-  lookup(endpoint, callback) {
+  lookup(endpoint, MockProvider, callback) {
     callback(new Error('Funky looking error message'), null);
   }
 }
@@ -93,15 +97,26 @@ describe('v1 API', function () {
       util = new HttpTestUtils(server);
 
       util.testEndpointResponse(endpoint, (err, res) => {
+        res.body.should.eql('token');
+        done();
+      });
+    });
+
+    it('returns an error if the token cannot be retrieved', function (done) {
+      server.close();
+      server = makeServer(new StorageServiceMockWithError());
+      util = new HttpTestUtils(server);
+
+      util.testEndpointResponse(endpoint, (err, res) => {
         res.body.should.eql({
-          token: 'token'
+          error: 'Funky looking error message'
         });
         done();
       });
     });
   });
 
-  describe('/v1/secret/default/:mount/:role endpoint', function() {
+  describe('/v1/secret/:token/:path endpoint', function() {
     const endpoint = '/v1/secret/default/foo/bar';
 
     it('accepts GET requests', function(done) {
