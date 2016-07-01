@@ -10,19 +10,19 @@ class MockProvider {
 }
 
 class StorageServiceMock {
-  lookup(endpoint, MockProvider, callback) {
+  lookup(token, secret, ProviderType, callback) {
     callback(null, null);
   }
 }
 
 class StorageServiceMockWithTokenResponse {
-  lookup(endpoint, MockProvider, callback) {
+  lookup(token, secret, ProviderType, callback) {
     callback(null, 'token');
   }
 }
 
 class StorageServiceMockWithSecretResponse {
-  lookup(endpoint, MockProvider, callback) {
+  lookup(token, secret, ProviderType, callback) {
     callback(null, {
       username: 'bob',
       password: 'my-awesome-password123'
@@ -31,7 +31,7 @@ class StorageServiceMockWithSecretResponse {
 }
 
 class StorageServiceMockWithError {
-  lookup(endpoint, MockProvider, callback) {
+  lookup(token, secret, ProviderType, callback) {
     callback(new Error('Funky looking error message'), null);
   }
 }
