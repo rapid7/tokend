@@ -16,6 +16,35 @@ class ImmediateInitializeProvider {
   }
 }
 
+class MockTokenProvider {
+  initialize(callback) {
+    callback(null, {
+      lease_id: 'token',
+      lease_duration: 60,
+      data: {
+        token: 'this-is-a-unique-token'
+      }
+    });
+  }
+}
+
+class MockSecretProvider {
+  constructor(secret, token) {
+    this.token = token;
+    this.secret = secret;
+  }
+
+  initialize(callback) {
+    callback(null, {
+      lease_id: 'token',
+      lease_duration: 60,
+      data: {
+        somesecret: 'SUPERSECRET'
+      }
+    });
+  }
+}
+
 class DelayedInitializeProvider {
 
   constructor(delay) {
@@ -140,6 +169,33 @@ describe('StorageService', function() {
       storage.lookup('default', secret, DelayedInitializeProvider, callback);
 
       manager.initialize();
+    });
+
+    it('should provide the default token to the Provider being retrieved if the token is available', function(done) {
+      const l = new LeaseManager(new MockTokenProvider());
+      const storage = new StorageService();
+
+      l.initialize();
+      storage._managers.set('/TokenProvider/default/default', l);
+      storage.defaultToken = l;
+
+      storage.lookup('default', 'somesecret', MockSecretProvider, (err, data) => {
+        const lm = storage._managers.get('/MockSecretProvider/default/somesecret');
+
+        lm.provider.token.should.eql('this-is-a-unique-token');
+        done();
+      });
+    });
+
+    it('should initialize the provider with a blank string if the requested token is not ready', function (done) {
+      const storage = new StorageService();
+
+      storage.lookup('default', 'somesecret', MockSecretProvider, (err, data) => {
+        const lm = storage._managers.get('/MockSecretProvider/default/somesecret');
+
+        lm.provider.token.should.eql('');
+        done();
+      });
     });
   });
 });
