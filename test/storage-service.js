@@ -39,7 +39,7 @@ describe('StorageService', function() {
 
   describe('StorageService#constructor', function () {
     it('should have a default LeaseManager', function () {
-      const secret = '/v1/token/default';
+      const secret = '/TokenProvider/default/default';
       const storage = new StorageService();
 
       should(storage._managers.size).eql(1);
