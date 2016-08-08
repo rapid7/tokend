@@ -66,7 +66,7 @@ describe('Provider/Generic', function () {
     // the right endpoint we need to provide the method name to read the secret endpoint.
     g._method = 'read';
 
-    return promisify((d) => g.initialize(d))
+    promisify((d) => g.initialize(d))
       .then(() => g.initialize((err, data) => {
         should(err).be.Error('Already initialized');
         should(data).be.null();
@@ -89,7 +89,7 @@ describe('Provider/Generic', function () {
       // the right endpoint we need to provide the method name to read the secret endpoint.
       g._method = 'read';
 
-      return promisify((d) => g.initialize(d))
+      promisify((d) => g.initialize(d))
         .then((data) => data.should.eql(expectedResponse))
         .then(() => done())
         .catch((err) => done(err));
@@ -110,7 +110,7 @@ describe('Provider/Generic', function () {
       // the right endpoint we need to provide the method name to read the secret endpoint.
       g._method = 'read';
 
-      return promisify((d) => g.initialize(d))
+      promisify((d) => g.initialize(d))
         .then((data) => {
           return data.should.eql(expectedResponse);
         })

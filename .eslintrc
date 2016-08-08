@@ -1,3 +1,10 @@
 {
-  "extends": "rapid7/base"
+  "extends": "rapid7/base",
+   "globals": {
+    "Config": true,
+    "Log": true
+  },
+  "env": {
+    "node": true
+  }
 }
