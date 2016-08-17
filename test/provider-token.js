@@ -127,7 +127,7 @@ describe('Provider/Token', function() {
       this.token._getDocument().then(this.token._sendDocument.bind(this.token)).should.eventually.eql(resp);
     });
 
-    it('Executes the callback with data if the Warden server returns it', function(done) {
+    it('Returns a resolved Promise if the Warden server returns it', function() {
       const resp = {
         lease_duration: 300, // eslint-disable-line rapid7/static-magic-numbers
         renewable: true,
@@ -136,22 +136,18 @@ describe('Provider/Token', function() {
 
       nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
 
-      this.token.initialize((err, data) => {
-        try {
-          should(err).be.null();
-          data.should.eql({
-            lease_id: resp.data.token,
-            lease_duration: resp.lease_duration,
-            data: resp.data
-          });
-          done();
-        } catch (ex) {
-          done(ex);
-        }
+      return this.token.initialize().then((data) => {
+        data.should.eql({
+          lease_id: resp.data.token,
+          lease_duration: resp.lease_duration,
+          data: resp.data
+        });
+      }).catch((err) => {
+        done(err);
       });
     });
 
-    it('Executes the callback with an error if it fails to get instance identity data', function(done) {
+    it('Returns a rejected Promise if it fails to get instance identity data', function() {
       AWS.MetadataService.prototype.request = _MetadataService;
       const m = new AWS.MetadataService({
         host: '169.254.169.254',
@@ -162,47 +158,37 @@ describe('Provider/Token', function() {
 
       nock('http://169.254.169.254').get('/').thrice();
 
-      token.initialize((err, data) => {
-        try {
-          should(data).be.null();
-          err.should.be.an.Error();
-          done();
-        } catch (ex) {
-          done(ex);
-        }
+      return token.initialize().then((data) => {
+        should(data).be.null();
+      }).catch((err) => {
+        err.should.be.an.Error();
       });
     });
 
-    it('Executes the callback with an error if it fails to send data to a Warden server', function(done) {
-      this.token.initialize((err, data) => {
-        try {
+    it('Returns a rejected Promise if it fails to send data to a Warden server', function() {
+      return this.token.initialize()
+        .then((data) => {
           should(data).be.null();
+        })
+        .catch((err) => {
           err.should.be.an.Error();
-          done();
-        } catch (ex) {
-          done(ex);
-        }
-      });
+        });
     });
 
-    it('Executes the callback with an error if it cannot parse the response from the Warden server', function(done) {
+    it('Returns a rejected Promise if it cannot parse the response from the Warden server', function() {
       nock(`http://${this.warden.host}:${this.warden.port}/`)
         .post()
         .once()
         .reply(STATUS_CODES.OK, {this: 'is', bad: 'response'});
 
-      this.token.initialize((err, data) => {
-        try {
-          should(data).be.null();
-          err.should.be.an.Error();
-          done();
-        } catch (ex) {
-          done(ex);
-        }
+      return this.token.initialize().then((data) => {
+        should(data).be.null();
+      }).catch((err) => {
+        err.should.be.an.Error();
       });
     });
 
-    it('Executes the callback with an error if it does not receive a 200OK from the Warden server', function(done) {
+    it('Returns a rejected Promise if it does not receive a 200OK from the Warden server', function() {
       const resp = {this: 'is', bad: 'response'};
 
       nock(`http://${this.warden.host}:${this.warden.port}/`)
@@ -210,15 +196,11 @@ describe('Provider/Token', function() {
           .once()
           .reply(STATUS_CODES.BAD_REQUEST, resp);
 
-      this.token.initialize((err, data) => {
-        try {
-          should(data).be.null();
-          err.should.be.an.Error();
-          err.message.should.equal(`${STATUS_CODES.BAD_REQUEST}: ${JSON.stringify(resp)}`);
-          done();
-        } catch (ex) {
-          done(ex);
-        }
+      return this.token.initialize().then((data) => {
+        should(data).be.null();
+      }).catch((err) => {
+        err.should.be.an.Error();
+        err.message.should.equal(`${STATUS_CODES.BAD_REQUEST}: ${JSON.stringify(resp)}`);
       });
     });
   });
@@ -249,7 +231,7 @@ describe('Provider/Token', function() {
       AWS.MetadataService.prototype.request = _MetadataService;
     });
 
-    it('Renews the Vault token when #renew() is called', function(done) {
+    it('Renews the Vault token when #renew() is called', function() {
       const lease_duration = 300;
 
       scope.post('/v1/auth/token/renew/somereallycooltoken')
@@ -258,18 +240,14 @@ describe('Provider/Token', function() {
         });
       this.token.token = 'somereallycooltoken';
 
-      this.token.renew((err, data) => {
-        try {
-          should(err).be.null();
-          data.should.eql({lease_duration, token: 'somereallycooltoken'});
-          done();
-        } catch (ex) {
-          done(ex);
-        }
+      return this.token.renew().then((data) => {
+        data.should.eql({lease_duration, token: 'somereallycooltoken'});
+      }).catch((err) => {
+        should(err).be.null();
       });
     });
 
-    it('Executes the callback with an error if the token cannot be renewed', function(done) {
+    it('Returns a rejected Promise if the token cannot be renewed', function(done) {
       scope.post('/v1/auth/token/renew/somereallycooltoken')
         .reply(STATUS_CODES.BAD_REQUEST, {errors: ['This token cannot be renewed']});
       this.token.token = 'somereallycooltoken';
@@ -285,17 +263,13 @@ describe('Provider/Token', function() {
       });
     });
 
-    it('Executes the callback with an error if the token has not been initialized', function(done) {
+    it('Returns a rejected Promise if the token has not been initialized', function() {
       this.token.token = null;
 
-      this.token.renew((err, data) => {
-        try {
-          should(data).be.null();
-          err.should.be.an.Error();
-          done();
-        } catch (ex) {
-          done(ex);
-        }
+      return this.token.renew().then((data) => {
+        should(data).be.null();
+      }).catch((err) => {
+        err.should.be.an.Error();
       });
     });
   });
