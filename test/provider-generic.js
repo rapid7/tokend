@@ -54,7 +54,7 @@ describe('Provider/Generic', function () {
     });
   });
 
-  it('can only be initialized once', function (done) {
+  it('can only be initialized once', function () {
     scope.get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, Object.assign({
       data: {value: 'coolvalue'},
       lease_duration: 2592000
@@ -66,16 +66,17 @@ describe('Provider/Generic', function () {
     // the right endpoint we need to provide the method name to read the secret endpoint.
     g._method = 'read';
 
-    promisify((d) => g.initialize(d))
-      .then(() => g.initialize((err, data) => {
-        should(err).be.Error('Already initialized');
+    return g.initialize().then(() => {
+      g.initialize().then((data) => {
         should(data).be.null();
-        done();
-      }));
+      }).catch((err) => {
+        should(err).be.Error('Already initialized');
+      });
+    });
   });
 
   describe('Valid secrets', function() {
-    it('executes the callback with the secret when initialized with a valid path and token', function (done) {
+    it('executes the callback with the secret when initialized with a valid path and token', function () {
       const expectedResponse = Object.assign({
         data: {value: 'coolvalue'},
         lease_duration: 2592000
@@ -89,20 +90,19 @@ describe('Provider/Generic', function () {
       // the right endpoint we need to provide the method name to read the secret endpoint.
       g._method = 'read';
 
-      promisify((d) => g.initialize(d))
-        .then((data) => data.should.eql(expectedResponse))
-        .then(() => done())
-        .catch((err) => done(err));
+      return g.initialize().then((data) => data.should.eql(expectedResponse));
     });
 
-    it('attempts to re-read the secret when renewed', function (done) {
+    it('attempts to re-read the secret when renewed', function () {
       const expectedResponse = Object.assign({
         data: {value: 'coolvalue'},
         lease_duration: 2592000
       }, resp);
 
-      scope.get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, expectedResponse)
-        .get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, expectedResponse);
+      scope.get('/v1/secret/coolsecret')
+          .reply(STATUS_CODES.OK, expectedResponse)
+          .get('/v1/secret/coolsecret')
+          .reply(STATUS_CODES.OK, expectedResponse);
 
       const g = new GenericProvider('coolsecret', 'a-valid-token');
 
@@ -110,15 +110,13 @@ describe('Provider/Generic', function () {
       // the right endpoint we need to provide the method name to read the secret endpoint.
       g._method = 'read';
 
-      promisify((d) => g.initialize(d))
-        .then((data) => {
-          return data.should.eql(expectedResponse);
-        })
-        .then(g.renew.bind(g, ((err, data) => {
-          return data.should.eql(expectedResponse);
-        })))
-        .then(() => done())
-        .catch((err) => done(err));
+      return g.initialize()
+        .then((data) => data.should.eql(expectedResponse))
+        .then(() => {
+          g.renew().then((data) => {
+            data.should.eql(expectedResponse)
+          });
+        });
     });
   });
 
@@ -132,17 +130,17 @@ describe('Provider/Generic', function () {
       nock.removeInterceptor(scope);
     });
 
-    it('executes the callback with an error if the path or token is invalid', function (done) {
+    it('executes the callback with an error if the path or token is invalid', function () {
       const g = new GenericProvider('notasecret', 'a-valid-token');
 
       // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
       // the right endpoint we need to provide the method name to read the secret endpoint.
       g._method = 'read';
 
-      g.initialize((err, data) => {
+      return g.initialize().then((data) => {
         should(data).be.null();
+      }).catch((err) => {
         err.should.be.an.Error();
-        done();
       });
     });
   });
