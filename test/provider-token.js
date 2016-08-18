@@ -247,19 +247,15 @@ describe('Provider/Token', function() {
       });
     });
 
-    it('Returns a rejected Promise if the token cannot be renewed', function(done) {
+    it('Returns a rejected Promise if the token cannot be renewed', function() {
       scope.post('/v1/auth/token/renew/somereallycooltoken')
         .reply(STATUS_CODES.BAD_REQUEST, {errors: ['This token cannot be renewed']});
       this.token.token = 'somereallycooltoken';
 
-      this.token.renew((err, data) => {
-        try {
-          should(data).be.null();
-          err.should.be.an.Error();
-          done();
-        } catch (ex) {
-          done(ex);
-        }
+      this.token.renew().then((data) => {
+        should(data).be.null();
+      }).catch((err) => {
+        err.should.be.an.Error();
       });
     });
 
