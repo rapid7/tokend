@@ -10,20 +10,20 @@ class MockProvider {
 }
 
 class StorageServiceMock {
-  lookup(token, secret, ProviderType, callback) {
-    callback(null, null);
+  lookup(token, secret, ProviderType) {
+    return Promise.resolve(null);
   }
 }
 
 class StorageServiceMockWithTokenResponse {
-  lookup(token, secret, ProviderType, callback) {
-    callback(null, 'token');
+  lookup(token, secret, ProviderType) {
+    return Promise.resolve('token');
   }
 }
 
 class StorageServiceMockWithSecretResponse {
-  lookup(token, secret, ProviderType, callback) {
-    callback(null, {
+  lookup(token, secret, ProviderType) {
+    return Promise.resolve({
       username: 'bob',
       password: 'my-awesome-password123'
     });
@@ -31,8 +31,8 @@ class StorageServiceMockWithSecretResponse {
 }
 
 class StorageServiceMockWithError {
-  lookup(token, secret, ProviderType, callback) {
-    callback(new Error('Funky looking error message'), null);
+  lookup(token, secret, ProviderType) {
+    return Promise.reject(new Error('Funky looking error message'));
   }
 }
 
