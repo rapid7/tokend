@@ -15,7 +15,7 @@ chai.use(require('chai-as-promised'));
 function createHttpMock() {
   const vaultHostname = `${(Config.get('vault:tls')) ? 'https' : 'http'}://${Config.get('vault:host')}:${Config.get('vault:port')}/`;
 
-  return nock(vaultHostname)
+  return nock(vaultHostname).persist()
       .get('/v1/sys/init')
       .reply(STATUS_CODES.OK, {initialized: true})
       .get('/v1/sys/seal-status')
