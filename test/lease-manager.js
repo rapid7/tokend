@@ -13,20 +13,25 @@ class CountingInitializeProvider {
     this.count = count;
   }
 
-  initialize(callback) {
-    if (this.count > 1) {
-      this.count -= 1;
-      callback(new Error(`Need ${this.count} more calls to initialize`), null);
-    }
-    else {
-      callback(null, {
-        data: 'SECRET',
-        lease_duration: 1
-      });
-    }
+  initialize() {
+    return new Promise((resolve, reject) => {
+      if (this.count > 1) {
+        this.count -= 1;
+        reject(new Error(`Need ${this.count} more calls to initialize`));
+      }
+      else {
+        resolve({
+          data: 'SECRET',
+          lease_duration: 1
+        });
+      }
+    });
   }
 
   renew() {
+    return new Promise((resolve, reject) => {
+      resolve(true);
+    });
   }
 }
 
@@ -39,23 +44,27 @@ class CountingRenewProvider {
     this.count = count;
   }
 
-  initialize(callback) {
-    callback(null, {
-      data: 'SECRET',
-      lease_duration: 1
+  initialize() {
+    return new Promise((resolve, reject) => {
+      resolve({
+        data: 'SECRET',
+        lease_duration: 1
+      });
     });
   }
 
-  renew(callback) {
-    if (this.count > 1) {
-      this.count -= 1;
-      callback(new Error(`Need ${this.count} more calls to renew`), null);
-    }
-    else {
-      callback(null, {
-        lease_duration: 2
-      });
-    }
+  renew() {
+    return new Promise((resolve, reject) => {
+      if (this.count > 1) {
+        this.count -= 1;
+        reject(new Error(`Need ${this.count} more calls to renew`));
+      }
+      else {
+        resolve({
+          lease_duration: 2
+        });
+      }
+    });
   }
 }
 
@@ -75,43 +84,49 @@ describe('LeaseManager#constructor', function () {
   it('changes status to READY when the provider immediately succeeds', function () {
     const manager = new LeaseManager(new CountingInitializeProvider(0));
 
-    manager.initialize();
-    return Promise.resolve(manager.status).should.eventually.eql('READY');
+    return manager.initialize().then(() => {
+      manager.status.should.eql('READY');
+    });
   });
 
   it('changes data to a secret when the provider immediately succeeds', function () {
     const manager = new LeaseManager(new CountingInitializeProvider(0));
 
-    manager.initialize();
-    return Promise.resolve(manager.data).should.eventually.eql('SECRET');
+    return manager.initialize().then(() => {
+      manager.data.should.eql('SECRET');
+    });
   });
 
   it('changes lease duration to non-zero when the provider immediately succeeds', function () {
     const manager = new LeaseManager(new CountingInitializeProvider(0));
 
-    manager.initialize();
-    return Promise.resolve(manager.lease_duration).should.eventually.eql(1);
+    return manager.initialize().then(() => {
+      manager.lease_duration.should.eql(1);
+    });
   });
 
   it('change status to ready when the provider eventually succeeds', function () {
     const manager = new LeaseManager(new CountingInitializeProvider(2));
 
-    manager.initialize();
-    return Promise.resolve(manager.status).should.eventually.eql('READY');
+    return manager.initialize().then(() => {
+      manager.status.should.eql('READY');
+    });
   });
 
   it('change data to a secret when the provider eventually succeeds', function () {
     const manager = new LeaseManager(new CountingInitializeProvider(2));
 
-    manager.initialize();
-    return Promise.resolve(manager.data).should.eventually.eql('SECRET');
+    return manager.initialize().then(() => {
+      manager.data.should.eql('SECRET');
+    });
   });
 
   it('change lease duration to non-zero when the provider eventually succeeds', function () {
     const manager = new LeaseManager(new CountingInitializeProvider(2));
 
-    manager.initialize();
-    return Promise.resolve(manager.lease_duration).should.eventually.eql(1);
+    return manager.initialize().then(() => {
+      manager.lease_duration.should.eql(1);
+    });
   });
 
   it('emits ready event when the provider succeeds', function (done) {
