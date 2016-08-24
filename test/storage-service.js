@@ -48,14 +48,12 @@ class MockSecretProvider {
   }
 
   initialize() {
-    return new Promise((resolve, reject) => {
-      resolve({
-        lease_id: 'token',
-        lease_duration: 60,
-        data: {
-          somesecret: 'SUPERSECRET'
-        }
-      })
+    return Promise.resolve({
+      lease_id: 'token',
+      lease_duration: 60,
+      data: {
+        somesecret: 'SUPERSECRET'
+      }
     });
   }
 }
@@ -74,14 +72,14 @@ class DelayedInitializeProvider {
   }
 
   renew() {
-    return new Promise((resolve, reject) => {
-      resolve({data: 'SECRET'});
-    });
+    return Promise.resolve({data: 'SECRET'});
   }
 }
 
 class NeverInitializeProvider {
-  initialize() {}
+  initialize() {
+    return Promise.reject(false);
+  }
 
   renew() {}
 }
@@ -110,15 +108,14 @@ describe('StorageService', function() {
 
   describe('StorageService#lookup', function () {
     it('should lookup the secret from a ready LeaseManager', function () {
-      const secret = 'test';
       const manager = new LeaseManager(new ImmediateInitializeProvider());
       const storage = setTokenProvider(new StorageService());
 
-      manager.initialize();
-      storage._managers.set(secret, manager);
-
-      return storage.lookup('default', secret, ImmediateInitializeProvider).then((data) => {
-        should(data).eql('SECRET');
+      storage._managers.set('/ImmediateInitializeProvider/default/test', manager);
+      return manager.initialize().then(() => {
+        return storage.lookup('default', 'test', ImmediateInitializeProvider).then((data) => {
+          should(data).eql('SECRET');
+        });
       });
     });
 
