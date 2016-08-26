@@ -10,7 +10,7 @@
     "start": "node ./bin/server.js",
     "test": "mocha --require ./test/init",
     "cover": "rm -Rf coverage/* && istanbul cover _mocha -- -R spec --require ./test/init",
-    "lint": "eslint bin/* lib/*.js lib/**/*.js test/*.js test/**/*.js",
+    "lint": "eslint bin/* 'lib/**/*.js' 'test/**/*.js'",
     "report": "coveralls < ./coverage/lcov.info",
     "warden-mock": "node ./test/bin/warden.js"
   },
