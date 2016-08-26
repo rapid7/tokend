@@ -84,12 +84,6 @@ class NeverInitializeProvider {
   renew() {}
 }
 
-class ErrorThrowingProvider {
-  initialize() {
-    return Promise.reject(new Error('This is a funny looking error'));
-  }
-}
-
 function setTokenProvider(storage) {
   const l = new LeaseManager(new MockTokenProvider());
 
