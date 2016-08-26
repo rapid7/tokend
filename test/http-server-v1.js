@@ -109,7 +109,10 @@ describe('v1 API', function () {
 
       util.testEndpointResponse(endpoint, (err, res) => {
         res.body.should.eql({
-          error: 'Funky looking error message'
+          error: {
+            message: 'Funky looking error message',
+            name: 'Error'
+          }
         });
         done();
       });
@@ -148,7 +151,10 @@ describe('v1 API', function () {
 
       util.testEndpointResponse(endpoint, (err, res) => {
         res.body.should.eql({
-          error: 'Funky looking error message'
+          error: {
+            message: 'Funky looking error message',
+            name: 'Error'
+          }
         });
         done();
       });
