@@ -84,6 +84,12 @@ class NeverInitializeProvider {
   renew() {}
 }
 
+class ErrorThrowingProvider {
+  initialize() {
+    return Promise.reject(new Error('This is a funny looking error'));
+  }
+}
+
 function setTokenProvider(storage) {
   const l = new LeaseManager(new MockTokenProvider());
 
@@ -202,6 +208,15 @@ describe('StorageService', function() {
         const lm = storage._managers.get('/MockSecretProvider/default/somesecret');
 
         lm.provider.token.should.not.eql('');
+      });
+    });
+
+    it('should remove a Provider from StorageService#_mangers if it raises an error', function () {
+      const storage = setTokenProvider(new StorageService());
+
+      return storage.lookup('default', 'somesecret', NeverInitializeProvider).catch(() => {
+        storage._managers.size.should.equal(1);
+        storage._managers.has('/NeverInitializeProvider/default/somesecret').should.be.false();
       });
     });
   });
