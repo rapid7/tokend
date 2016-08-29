@@ -204,5 +204,14 @@ describe('StorageService', function() {
         lm.provider.token.should.not.eql('');
       });
     });
+
+    it('should remove a Provider from StorageService#_mangers if it raises an error', function () {
+      const storage = setTokenProvider(new StorageService());
+
+      return storage.lookup('default', 'somesecret', NeverInitializeProvider).catch(() => {
+        storage._managers.size.should.equal(1);
+        storage._managers.has('/NeverInitializeProvider/default/somesecret').should.be.false();
+      });
+    });
   });
 });
