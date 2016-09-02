@@ -12,7 +12,8 @@
     "cover": "rm -Rf coverage/* && istanbul cover _mocha -- -R spec --require ./test/init",
     "lint": "eslint bin/* 'lib/**/*.js' 'test/**/*.js'",
     "report": "coveralls < ./coverage/lcov.info",
-    "warden-mock": "node ./test/bin/warden.js"
+    "warden-mock": "node ./test/bin/warden.js",
+    "metadata-server": "METADATA_HOST=127.0.0.1:8900 node ./test/bin/metadata-server.js"
   },
   "repository": {
     "type": "git",
