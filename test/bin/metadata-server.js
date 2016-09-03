@@ -71,4 +71,5 @@ const server = HTTP.createServer((req, res) => {
 });
 
 server.on('listening', () => console.log(`listening for metadata requests at http://127.0.0.1:${port}`));
+server.on('request', (req, res) => console.log(`${new Date().toISOString()} - client requested ${req.url}`));
 server.listen(port);
