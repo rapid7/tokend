@@ -41,11 +41,13 @@ function deepGet(root, path) {
 }
 
 function sendResponse(res, code, body) {
+  console.log(`${new Date().toISOString()} - server responded: ${body.toString()}`);
   res.writeHead(code, {'Content-Length': body.length, 'Content-Type': 'text/plain'});
   res.end(body);
 }
 
 const server = HTTP.createServer((req, res) => {
+  console.log(`${new Date().toISOString()} - client requested: ${req.url}`);
   const slash = /\/$/.test(req.url);
   const item = deepGet(metadata, req.url.replace(/\/$/, ''));
   let code = STATUS_CODES.OK,
@@ -71,5 +73,4 @@ const server = HTTP.createServer((req, res) => {
 });
 
 server.on('listening', () => console.log(`listening for metadata requests at http://127.0.0.1:${port}`));
-server.on('request', (req, res) => console.log(`${new Date().toISOString()} - client requested ${req.url}`));
 server.listen(port);
