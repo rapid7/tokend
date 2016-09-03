@@ -9,7 +9,6 @@ const STATUS_CODES = require('../../lib/control/util/status-codes');
 const Config = require('nconf').env();
 const metadata = require('../data/metadata.json');
 
-Config.defaults({METADATA_HOST: '127.0.0.1:8900'});
 const addr = Config.get('METADATA_HOST');
 const port = (addr.split(':').length === 2) ? addr.split(':').pop() : '80';
 
