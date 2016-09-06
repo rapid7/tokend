@@ -1,0 +1,81 @@
+{
+  "latest": {
+    "dynamic": {
+      "instance-identity": {
+        "document": "{\n  \"privateIp\" : \"10.196.24.63\",\n  \"devpayProductCodes\" : null,\n  \"availabilityZone\" : \"us-east-1a\",\n  \"version\" : \"2010-08-31\",\n  \"instanceId\" : \"i-aaaf2d1a\",\n  \"billingProducts\" : null,\n  \"instanceType\" : \"t2.small\",\n  \"accountId\" : \"000000000\",\n  \"imageId\" : \"ami-bcbffad6\",\n  \"pendingTime\" : \"2015-11-18T19:01:04Z\",\n  \"kernelId\" : null,\n  \"ramdiskId\" : null,\n  \"architecture\" : \"x86_64\",\n  \"region\" : \"us-east-1\"\n}",
+        "signature": "gbd9X9RJfapaoOPN9Cm2a8A5FGPOJQjLA+SObRInmNnTyj3d72hUqgZvBHz8dq4xLVAJHSyEC3JX\nbgYF8jVAtAY7hYQM9PzgJEeHg0XjXz6ynIFlbPakdRgo4Se3ISX1hM6qU/SwxEJj9omL2S2n6Nao\nmqDew5xlXIgutDYQwgQ=",
+        "dsa2048": "ssINvJ9x9+zH6Tmll2JVr2ISzjmAlbvQA6dTZtAi2eWGyX2Mewedb59wKVWXnwihNudAMEGniDYt\ndNmWInburTFGZ/AUxtqK1CY2/bO4cg4tNxsmipxpknEOpSbsrMsc6Dd+SIi1FuiI61FKMrrIvHOn\nrHd6SylWfhnMgS7txLThFxw3SE/UqIZW8BCbvvO+c/mWrboAx14kNFq6a/1QsP5+8j9Zk6+aAM/L\npI8Q47XnJxz6W0DkK09f6pOOI+UyHStThAZUSm93Pe6j3U/RvCZM7fRpG3T/gDGyU68sGtIgoqTb\noF/PVDQYOISFYMn+T+98mk2HTuv96PNWMAvhDQ==",
+        "pkcs7": "MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAaCAJIAEggGmewog\nICJwcml2YXRlSXAiIDogIjEwLjE5Ni4yNC42MyIsCiAgImRldnBheVByb2R1Y3RDb2RlcyIgOiBu\ndWxsLAogICJhdmFpbGFiaWxpdHlab25lIiA6ICJ1cy1lYXN0LTFhIiwKICAidmVyc2lvbiIgOiAi\nMjAxMC0wOC0zMSIsCiAgImluc3RhbmNlSWQiIDogImktYWFhZjJkMWEiLAogICJiaWxsaW5nUHJv\nZHVjdHMiIDogbnVsbCwKICAiaW5zdGFuY2VUeXBlIiA6ICJ0Mi5zbWFsbCIsCiAgImFjY291bnRJ\nZCIgOiAiNzE2NzU2MTk5NTYyIiwKICAiaW1hZ2VJZCIgOiAiYW1pLWJjYmZmYWQ2IiwKICAicGVu\nZGluZ1RpbWUiIDogIjIwMTUtMTEtMThUMTk6MDE6MDRaIiwKICAia2VybmVsSWQiIDogbnVsbCwK\nICAicmFtZGlza0lkIiA6IG51bGwsCiAgImFyY2hpdGVjdHVyZSIgOiAieDg2XzY0IiwKICAicmVn\naW9uIiA6ICJ1cy1lYXN0LTEiCn0AAAAAAAAxggEYMIIBFAIBATBpMFwxCzAJBgNVBAYTAlVTMRkw\nFwYDVQQIExBXYXNoaW5ndG9uIFN0YXRlMRAwDgYDVQQHEwdTZWF0dGxlMSAwHgYDVQQKExdBbWF6\nb24gV2ViIFNlcnZpY2VzIExMQwIJAJa6SNnlXhpnMAkGBSsOAwIaBQCgXTAYBgkqhkiG9w0BCQMx\nCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0xNTExMTgxOTAxMThaMCMGCSqGSIb3DQEJBDEW\nBBRl2oC56YzkPa83VvQzeoMUqMElUzAJBgcqhkjOOAQDBC8wLQIUC/Ab91UXE/K7obsWxdj3DNx2\nKEsCFQCkBRpQBr8yeJQAzUx3Kd8VhwGyhQAAAAAAAA=="
+      }
+    },
+    "meta-data": {
+      "ami-id": "ami-bcbffad6",
+      "ami-launch-index": "0",
+      "ami-manifest-path": "(unknown)",
+      "block-device-mapping": {
+         "ami": "/dev/sda1",
+         "ephemeral0": "sdb",
+         "ephemeral1": "sdc",
+         "root": "/dev/sda1"
+      },
+      "hostname": "ip-10-196-24-63.ec2.internal",
+      "iam": {
+        "info": "{\n  \"Code\" : \"Success\",\n  \"LastUpdated\" : \"2016-06-06T20:42:46Z\",\n  \"InstanceProfileArn\" : \"arn:aws:iam::716756199562:instance-profile/fake/fake/fake-fake\",\n  \"InstanceProfileId\" : \"FAKE12344\"\n}",
+        "security-credentials": {
+          "fake-fake":  "{\n  \"Code\" : \"Success\",\n  \"LastUpdated\" : \"2016-06-06T20:42:15Z\",\n  \"Type\" : \"AWS-HMAC\",\n  \"AccessKeyId\" : \"FAKE1234\",\n  \"SecretAccessKey\" : \"foobarbazRandomBase64\",\n  \"Token\" : \"nopenopenope=\",\n  \"Expiration\" : \"2016-06-07T02:48:58Z\"\n}"
+        }
+      },
+      "instance-action": "none",
+      "instance-id": "i-aaaf2d1a",
+      "instance-type": "t2.small",
+      "local-hostname": "ip-10-196-24-63.ec2.internal",
+      "local-ipv4": "10.196.24.63",
+      "mac": "0e:9c:a1:fe:2f:ef",
+      "metrics": {
+        "vhostmd":  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      },
+      "network": {
+        "interfaces": {
+          "macs": {
+            "0e:9c:a1:fe:2f:ef": {
+              "device-number": "0",
+              "interface-id": "eni-fake",
+              "ipv4-associations": {
+                 "1.2.3.4":  "10.196.24.63"
+              },
+              "local-hostname": "ip-10-196-24-63.ec2.internal",
+              "local-ipv4s": "10.196.24.63",
+              "mac": "0e:9c:a1:fe:2f:ef",
+              "owner-id": "716756199562",
+              "public-hostname": "ec2-1-2-3-4.compute-1.amazonaws.com",
+              "public-ipv4s": "1.2.3.4",
+              "security-group-ids": ["sg-fake1", "sg-fake2"],
+              "security-groups": ["fake-fake", "foo-bar-baz"],
+              "subnet-id": "subnet-fake",
+              "subnet-ipv4-cidr-block": "10.196.24.0/25",
+              "vpc-id": "vpc-fake",
+              "vpc-ipv4-cidr-block": "10.196.0.0/18"
+            }
+          }
+        }
+      },
+      "placement": {
+        "availability-zone": "us-east-1a"
+      },
+      "profile": "default-hvm",
+      "public-hostname": "ec2-1-2-3-4.compute-1.amazonaws.com",
+      "public-ipv4": "1.2.3.4",
+      "public-keys": {
+        "0=fakekeys": {
+
+        }
+      },
+      "reservation-id": "r-fake",
+      "security-groups": ["fake-fake", "foo-bar-baz"],
+      "services": {
+        "domain": "amazonaws.com",
+        "partition": "aws"
+      }
+    }
+  }
+}
