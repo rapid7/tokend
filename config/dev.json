@@ -1,6 +1,9 @@
 {
   "vault": {
-    "tls": false
+    "host": "127.0.0.1",
+    "port": 8200,
+    "tls": false,
+    "token_ttl": "1m"
   },
   "metadata": {
     "host": "127.0.0.1:8900"
@@ -12,9 +15,5 @@
   "log": {
     "level": "INFO",
     "json": false
-  },
-  "service": {
-    "max_timeout": 2,
-    "default_timeout": 5000
   }
 }
