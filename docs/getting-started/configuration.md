@@ -14,8 +14,8 @@ The options below are specified on the command-line.
 
 ## Configuration Files ##
 
-Configuration files are JSON formatted. They are a single JSON object
-containing configuration values.
+Configuration files are a single JSON formatted object, containing additional
+objects or key value pairs.
 
 ### Minimal Configuration File ###
 
@@ -38,7 +38,8 @@ specified in order for Tokend to run.
 
 ### Default Configuration File ###
 
-The configuration file below is the default settings for Tokend.
+This is the default configuration for Tokend, which you can find in
+[`config/defaults.json`][config-path].
 
 ```json
 {
@@ -102,16 +103,19 @@ exposed for development purposes.
 * `log` - These settings control logging.
 
   Tokend treats logging as an event stream and logs to `stdout`. Logged events
-  are formatted as JSON objects separated by newlines. If you need routing or
-  storage of logs, you'll want to handle that outside Tokend.
+  can be formatted as JSON objects separated by newlines (see below) or simple
+  console output. If you need routing or storage of logs, you'll need to handle
+  that outside Tokend.
 
   The following keys are available:
 
-  * `level` - The level to log at. Valid values are "debug", "verbose", "info",
-    "warn", and "error". Each log level encompasses all the ones below it. So
-    "debug" is the most verbose and "error" is the least verbose. Defaults to
-    "info".
+  * `level` - The level to log at. Valid values are `debug`, `verbose`, `info`,
+    `warn`, and `error`. Each log level encompasses all the ones below it. So
+    `debug` is the most verbose and `error` is the least verbose. Defaults to
+    `info`.
+  * `json` - Whether to output the logs as JSON formatted objects. Defaults to `true`.
 
+[config-path]: ../../config/defaults.json
 [Vault]: https://www.vaultproject.io/
 [default_lease_ttl]: https://www.vaultproject.io/docs/config/#default_lease_ttl
 [ec2-metadata-service]: http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html
