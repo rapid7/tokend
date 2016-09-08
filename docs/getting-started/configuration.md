@@ -65,8 +65,8 @@ This is the default configuration for Tokend, which you can find in
 * `vault` - These specify [Vault][] connection settings.
 
 	The following keys are available:
-	
-	* `host` - The HTTP address of the Vault server. Defaults to `127.0.0.1
+
+	* `host` - The HTTP address of the Vault server. Defaults to `127.0.0.1`.
 
 	* `port` - The HTTP port of the Vault server. Defaults to `8200`.
 
@@ -78,20 +78,20 @@ This is the default configuration for Tokend, which you can find in
 
 	Generally these settings won't need to be changed from the defaults. They are
 exposed for development purposes.
-	
+
 	The following keys are available:
-	
+
 	* `host`: The hostname and port used to connect to the EC2 Metadata Service. Defaults to `169.254.169.254`.
 
 * `warden` - Connection information for [Warden][].
 
 	Tokend has a tight dependency on Warden to retrieve its initial token.
-	
+
 	The following keys are available:
-	
+
 	* `host`: The hostname for Warden.
     * `port`: The port for Warden.
-   
+
 * `service` - These settings control the HTTP API.
 
   The following keys are available:
