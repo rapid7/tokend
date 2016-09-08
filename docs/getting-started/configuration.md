@@ -67,11 +67,8 @@ This is the default configuration for Tokend, which you can find in
 	The following keys are available:
 
 	* `host` - The HTTP address of the Vault server. Defaults to `127.0.0.1`.
-
 	* `port` - The HTTP port of the Vault server. Defaults to `8200`.
-
 	* `tls` - Whether Vault should use TLS. Defaults to `true`.
-
 	* `token_ttl` - The TTL (time to live) of Vault tokens. This maps directly to Vault's [`default_lease_ttl`][default_lease_ttl] setting.
 
 * `metadata` - This specifies settings for the [EC2 Metadata Service][ec2-metadata-service]
@@ -81,7 +78,7 @@ exposed for development purposes.
 
 	The following keys are available:
 
-	* `host`: The hostname and port used to connect to the EC2 Metadata Service. Defaults to `169.254.169.254`.
+	* `host` - The hostname and port used to connect to the EC2 Metadata Service. Defaults to `169.254.169.254`. This setting includes the port, so if changing from the default, the format is `host:port`.
 
 * `warden` - Connection information for [Warden][].
 
@@ -89,15 +86,14 @@ exposed for development purposes.
 
 	The following keys are available:
 
-	* `host`: The hostname for Warden.
-    * `port`: The port for Warden.
+	* `host` - The hostname for Warden.
+  * `port` - The port for Warden.
 
 * `service` - These settings control the HTTP API.
 
   The following keys are available:
 
   * `host` - The address the HTTP API binds to. Defaults to `127.0.0.1`.
-
   * `port` - The port the HTTP API listens on. Defaults to `4500`.
 
 * `log` - These settings control logging.
