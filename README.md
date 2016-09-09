@@ -1,7 +1,7 @@
 Tokend
 =========
 
-*A daemon that interfaces with [Vault][] and [Warden][] to provide a secure method to deliver secrets to servers in the cloud.*
+*A [Node.js][] daemon that interfaces with [Vault][] and [Warden][] to provide a secure method to deliver secrets to servers in the cloud.*
 
 [![Build Status][travis-img]][travis]
 [![Coverage Status][coverage-img]][coverage]
@@ -37,6 +37,7 @@ $ rake
 
 Then following the steps to create the release on [github.com]
 
+[Node.js]: https://nodejs.org/en/
 [travis-img]: https://travis-ci.org/rapid7/tokend.svg?branch=master
 [travis]: https://travis-ci.org/rapid7/tokend
 [coverage-img]: https://coveralls.io/repos/github/rapid7/tokend/badge.svg?branch=master
