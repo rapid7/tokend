@@ -30,6 +30,9 @@ function deepGet(root, path) {
 
   path.split('/').forEach((branch, index, branches) => {
     if (branch) {
+      if (!twig.hasOwnProperty(branch)) {
+        return null;
+      }
       if (index < branches.length - 1) {
         twig = twig[branch];
       } else {
