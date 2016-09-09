@@ -36,6 +36,14 @@ if (args.c) {
 }
 Config.defaults(require('../config/defaults.json'));
 
+Config.required([
+  'vault:host',
+  'vault:port',
+  'vault:token_ttl',
+  'warden:host',
+  'warden:port'
+]);
+
 global.Log = Logger.attach(Config.get('log:level'));
 
 // Add request logging middleware

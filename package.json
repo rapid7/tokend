@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node ./bin/server.js",
+    "dev": "node ./bin/server.js -c ./config/dev.json",
     "test": "mocha --require ./test/init",
     "cover": "rm -Rf coverage/* && istanbul cover _mocha -- -R spec --require ./test/init",
     "lint": "eslint bin/* 'lib/**/*.js' 'test/**/*.js'",

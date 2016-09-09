@@ -1,0 +1,19 @@
+{
+  "vault": {
+    "host": "127.0.0.1",
+    "port": 8200,
+    "tls": false,
+    "token_ttl": "1m"
+  },
+  "metadata": {
+    "host": "127.0.0.1:8900"
+  },
+  "warden": {
+    "host": "127.0.0.1",
+    "port": 3000
+  },
+  "log": {
+    "level": "INFO",
+    "json": false
+  }
+}
