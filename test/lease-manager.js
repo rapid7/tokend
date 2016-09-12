@@ -64,6 +64,33 @@ class CountingRenewProvider {
   }
 }
 
+class ChangingTimeoutProvider {
+  constructor() {
+    this.renewed = false;
+  }
+
+  initialize() {
+    return Promise.resolve({
+      data: 'SECRET',
+      lease_duration: 1
+    });
+  }
+
+  renew() {
+    if (this.renewed) {
+      return Promise.resolve({
+        data: 'SECRET',
+        lease_duration: 1
+      });
+    }
+    this.renewed = true;
+    return Promise.resolve({
+      data: 'SECRET',
+      lease_duration: 2
+    });
+  }
+}
+
 describe('LeaseManager#constructor', function () {
   it('has a default status of PENDING', function () {
     should(new LeaseManager().status).eql('PENDING');
@@ -158,5 +185,32 @@ describe('LeaseManager#_renew', function () {
     });
 
     manager.initialize();
+  });
+
+  it('shouldn\t try to change #_timer unless the token/secret timeout has changed', function (done) {
+    const manager = new LeaseManager(new ChangingTimeoutProvider());
+    let timer = null,
+        renewal = false;
+
+    manager.on('ready', () => {
+      timer = manager._timer;
+    });
+
+    manager.on('renewed', () => {
+      if (!renewal) {
+        manager._timer.should.equal(timer);
+        timer = manager._timer;
+        timer._idleTimeout.should.equal(500); // 1 second / 2
+        renewal = true;
+      } else {
+        manager._timer.should.not.equal(timer);
+        manager._timer._idleTimeout.should.equal(1000) // 2 seconds / 2
+        done();
+      }
+    });
+
+    manager.initialize().then(() => {
+      manager.initialize();
+    })
   });
 });
