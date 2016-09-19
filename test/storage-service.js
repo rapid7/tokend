@@ -1,7 +1,7 @@
 'use strict';
 
 const should = require('should');
-
+const sinon = require('sinon');
 const LeaseManager = require('../lib/lease-manager');
 const StorageService = require('../lib/storage-service');
 const TokenProvider = require('../lib/providers/token');
@@ -38,6 +38,24 @@ class MockTokenProvider {
 
   renew() {
     return Promise.resolve(this.data);
+  }
+}
+
+class DelayedMockTokenProvider {
+  constructor() {
+    this.data = {
+      lease_id: 'token',
+      lease_duration: 60,
+      data: {
+        token: 'this-is-a-unique-token'
+      }
+    };
+  }
+
+  initialize() {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(this.data), 1000);
+    });
   }
 }
 
@@ -84,8 +102,11 @@ class NeverInitializeProvider {
   renew() {}
 }
 
-function setTokenProvider(storage) {
-  const l = new LeaseManager(new MockTokenProvider());
+function setTokenProvider(storage, provider) {
+  if (!provider) {
+    provider = new MockTokenProvider();
+  }
+  const l = new LeaseManager(provider);
 
   storage._managers.set('/TokenProvider/default/default', l);
   storage.defaultToken = l;
@@ -203,6 +224,14 @@ describe('StorageService', function() {
 
         lm.provider.token.should.not.eql('');
       });
+    });
+
+    it('should only provision one TokenProvider', function () {
+      const spy = sinon.spy(DelayedMockTokenProvider.prototype, 'initialize');
+      const storage = setTokenProvider(new StorageService(), new DelayedMockTokenProvider());
+
+      return storage.lookup('default', 'somesecret', MockSecretProvider).then(() => spy.calledOnce.should.be.true);
+
     });
 
     it('should remove a Provider from StorageService#_mangers if it raises an error', function () {
