@@ -4,6 +4,7 @@ const should = require('should');
 
 const LeaseManager = require('../lib/lease-manager');
 
+/* eslint-disable no-inline-comments */
 /**
  * A mock SecretProvider that fails to initialize N times before succeeding
  */
