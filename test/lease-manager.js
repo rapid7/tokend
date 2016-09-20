@@ -5,6 +5,31 @@ const should = require('should');
 const LeaseManager = require('../lib/lease-manager');
 
 /* eslint-disable no-inline-comments */
+
+/**
+ * A mock SecretProvider that fails to initialize
+ */
+class FailToInitializeProvider {
+  initialize() {
+    return Promise.reject(new Error('Failed to initialize.'));
+  }
+}
+
+/**
+ * A mock SecretProvider that fails to renew
+ */
+class FailToRenewProvider {
+  initialize() {
+    return Promise.resolve({
+      data: 'SECRET',
+      lease_duration: 1
+    })
+  }
+  renew() {
+    return Promise.reject(new Error('Failed to renew.'));
+  }
+}
+
 /**
  * A mock SecretProvider that fails to initialize N times before succeeding
  */
@@ -104,7 +129,9 @@ describe('LeaseManager#constructor', function () {
   it('has a default lease duration that is zero', function () {
     should(new LeaseManager().lease_duration).eql(0);
   });
+});
 
+describe('LeaseManager#initialize', function () {
   it('changes status to READY when the provider immediately succeeds', function () {
     const manager = new LeaseManager(new CountingInitializeProvider(0));
 
@@ -163,6 +190,15 @@ describe('LeaseManager#constructor', function () {
 
     manager.initialize().catch(() => manager.initialize());
   });
+
+  it('should clear the provider data and lease_duration if the provider fails to initialize', function () {
+    const manager = new LeaseManager(new FailToInitializeProvider());
+
+    return manager.initialize().catch(() => {
+      should(manager.data).be.null();
+      manager.lease_duration.should.equal(0);
+    });
+  });
 });
 
 describe('LeaseManager#_renew', function () {
@@ -213,5 +249,17 @@ describe('LeaseManager#_renew', function () {
     manager.initialize().then(() => {
       manager.initialize();
     })
+  });
+
+  it.only('shouldn\'t clear the provider data when renewal fails', function (done) {
+    const manager = new LeaseManager(new FailToRenewProvider());
+
+    manager.on('error', () => {
+      manager.data.should.not.be.null();
+      manager.lease_duration.should.not.equal(0);
+      done();
+    });
+
+    manager.initialize();
   });
 });
