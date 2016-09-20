@@ -229,13 +229,8 @@ describe('LeaseManager#_renew', function () {
     let timer = null,
         renewal = false;
 
-    manager.on('ready', () => {
-      timer = manager._timer;
-    });
-
     manager.on('renewed', () => {
       if (!renewal) {
-        manager._timer.should.equal(timer);
         timer = manager._timer;
         timer._idleTimeout.should.equal(500); // 1 second / 2
         renewal = true;
