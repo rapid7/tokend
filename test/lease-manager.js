@@ -251,7 +251,7 @@ describe('LeaseManager#_renew', function () {
     })
   });
 
-  it.only('shouldn\'t clear the provider data when renewal fails', function (done) {
+  it('shouldn\'t clear the provider data when renewal fails', function (done) {
     const manager = new LeaseManager(new FailToRenewProvider());
 
     manager.on('error', () => {
