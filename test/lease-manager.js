@@ -188,7 +188,7 @@ describe('LeaseManager#_renew', function () {
     manager.initialize();
   });
 
-  it('shouldn\t try to change #_timer unless the token/secret timeout has changed', function (done) {
+  it('should change the #_timer if the token/secret timeout has changed', function (done) {
     const manager = new LeaseManager(new ChangingTimeoutProvider());
     let timer = null,
         renewal = false;
