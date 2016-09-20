@@ -241,7 +241,7 @@ describe('LeaseManager#_renew', function () {
         renewal = true;
       } else {
         manager._timer.should.not.equal(timer);
-        manager._timer._idleTimeout.should.equal(1000) // 2 seconds / 2
+        manager._timer._idleTimeout.should.equal(1000); // 2 seconds / 2
         done();
       }
     });
