@@ -8,28 +8,36 @@ const should = require('should');
 
 describe('Provider/Transit', function () {
   describe('TransitProvider#constructor', function () {
-    it('throws an IllegalValueError if the key is not provided', function () {
-      should.throws(() => {
-        return new TransitProvider('', 'TOKEN', {ciphertext: 'CTEXT'});
-      }, preconditions.IllegalValueError);
+    it('requires key be provided', function () {
+      [null, undefined, ''].forEach(function (value) {
+        should.throws(() => {
+          return new TransitProvider(value, 'TOKEN', {ciphertext: 'CTEXT'});
+        }, preconditions.IllegalValueError, `invalid "key" argument: ${value}`);
+      });
     });
 
-    it('throws an IllegalValueError if the token is not provided', function () {
-      should.throws(() => {
-        return new TransitProvider('KEY', '', {ciphertext: 'CTEXT'});
-      }, preconditions.IllegalValueError);
+    it('requires token be provided', function () {
+      [null, undefined, ''].forEach(function (value) {
+        should.throws(() => {
+          return new TransitProvider('KEY', value, {ciphertext: 'CTEXT'});
+        }, preconditions.IllegalValueError, `invalid "token" argument: ${value}`);
+      });
     });
 
-    it('throws an IllegalValueError if the parameters are not provided', function () {
-      should.throws(() => {
-        return new TransitProvider('KEY', '', null);
-      }, preconditions.IllegalValueError);
+    it('requires parameters be provided', function () {
+      [null, undefined, ''].forEach(function (value) {
+        should.throws(() => {
+          return new TransitProvider('KEY', 'TOKEN', value);
+        }, preconditions.IllegalValueError, `invalid "parameters" argument: ${value}`);
+      });
     });
 
-    it('throws an IllegalValueError if parameters.ciphertext is not provided', function () {
-      should.throws(() => {
-        return new TransitProvider('KEY', '', {plaintext: 'PTEXT'});
-      }, preconditions.IllegalValueError);
+    it('requires parameters.ciphertext be provided', function () {
+      [null, undefined, ''].forEach(function (value) {
+        should.throws(() => {
+          return new TransitProvider('KEY', 'TOKEN', {ciphertext: value});
+        }, preconditions.IllegalValueError, `invalid "parameters.ciphertext" argument: ${value}`);
+      });
     });
   });
 });
