@@ -19,5 +19,17 @@ describe('Provider/Transit', function () {
         return new TransitProvider('KEY', '', {ciphertext: 'CTEXT'});
       }, preconditions.IllegalValueError);
     });
+
+    it('throws an IllegalValueError if the parameters are not provided', function () {
+      should.throws(() => {
+        return new TransitProvider('KEY', '', null);
+      }, preconditions.IllegalValueError);
+    });
+
+    it('throws an IllegalValueError if parameters.ciphertext is not provided', function () {
+      should.throws(() => {
+        return new TransitProvider('KEY', '', {plaintext: 'PTEXT'});
+      }, preconditions.IllegalValueError);
+    });
   });
 });
