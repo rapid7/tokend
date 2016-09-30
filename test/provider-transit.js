@@ -118,4 +118,40 @@ describe('Provider/Transit', function () {
       .catch(done);
     });
   });
+
+  describe('TransitProvider#renew', function () {
+    it('calls Vault every time when renewing', function (done) {
+      const transit = new TransitProvider('KEY', 'TOKEN', {ciphertext: 'CTEXT'});
+
+      localVaultMock.post('/v1/transit/decrypt/KEY', {
+        ciphertext: 'CTEXT'
+      })
+      .reply(STATUS_CODES.OK, {
+        plaintext: 'PTEXT'
+      })
+      .post('/v1/transit/decrypt/KEY', {
+        ciphertext: 'CTEXT'
+      })
+      .reply(STATUS_CODES.OK, {
+        plaintext: 'PTEXT'
+      });
+
+      transit.renew()
+      .then((retrievedPlaintext) => {
+        should(retrievedPlaintext).eql({
+          plaintext: 'PTEXT'
+        });
+      })
+      .then(() => transit.renew())
+      .then((renewedPlaintext) => {
+        should(renewedPlaintext).eql({
+          plaintext: 'PTEXT'
+        });
+
+        localVaultMock.done();
+        done();
+      })
+      .catch(done);
+    });
+  });
 });
