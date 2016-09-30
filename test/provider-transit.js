@@ -100,9 +100,7 @@ describe('Provider/Transit', function () {
         plaintext: 'PTEXT'
       });
 
-      transit._client.prepare(transit._token)
-      .then(() => transit._client.mountTransit({token: transit._token}))
-      .then(() => transit.initialize())
+      transit.initialize()
       .then((retrievedPlaintext) => {
         should(retrievedPlaintext).eql({
           plaintext: 'PTEXT'
