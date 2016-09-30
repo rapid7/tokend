@@ -117,6 +117,26 @@ describe('Provider/Transit', function () {
       })
       .catch(done);
     });
+
+    it('fails with an error if the key does not exist', function (done) {
+      const transit = new TransitProvider('INVALID-KEY', 'TOKEN', {ciphertext: 'CTEXT'});
+
+      localVaultMock.post('/v1/transit/decrypt/INVALID-KEY', {
+        ciphertext: 'CTEXT'
+      })
+      .reply(STATUS_CODES.BAD_REQUEST, {
+        errors: ['policy not found']
+      });
+
+      transit.initialize()
+      .then(() => done(new Error('Invalid keys should fail!')))
+      .catch((err) => {
+        should(err).be.instanceOf(Error);
+
+        localVaultMock.done();
+        done();
+      });
+    });
   });
 
   describe('TransitProvider#renew', function () {
