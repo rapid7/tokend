@@ -36,8 +36,8 @@ $ bundle exec rake default
 ```
 
 To be able to create a new release on github.com, you must have the following environment variables set:
-* `GITHUB_LOGIN`
-* `GITHUB_TOKEN`
+* `GITHUB_CLIENT_ID`
+* `GITHUB_CLIENT_TOKEN`
 
 and the user and token must have the appropriate permissions in this repository.
 
