@@ -133,7 +133,11 @@ task :release do
   puts 'Make sure you add release notes!'
   cp ::File.join(base_dir, "#{name}-#{version}.tgz"), pkg_dir
 
-  latest_release = github_client.latest_release(github_repo)
+  begin
+    latest_release = github_client.latest_release(github_repo)
+  rescue Octokit::NotFound
+    latest_release = OpenStruct.new(name: 'master')
+  end
 
   release = github_client.create_release(
     github_repo,
