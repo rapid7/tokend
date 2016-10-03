@@ -57,6 +57,7 @@ class HttpTestUtils {
    * @param {string} endpoint
    * @param {string} type
    * @param {number} code
+   * @param {object} [body]
    * @returns {Test}
    */
   request(endpoint, type, code, body) {

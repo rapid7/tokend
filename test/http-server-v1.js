@@ -164,7 +164,7 @@ describe('v1 API', function () {
 
   describe('/v1/transit/default/decrypt endpoint', function () {
     const endpoint = '/v1/transit/default/decrypt';
-    const body = { key: 'KEY', ciphertext: 'CTEXT'};
+    const body = {key: 'KEY', ciphertext: 'CTEXT'};
 
     it('accepts POST requests', function (done) {
       util.acceptPOSTRequest(endpoint, body).end(done);
