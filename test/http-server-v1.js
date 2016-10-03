@@ -1,5 +1,6 @@
 'use strict';
 
+require('./init');
 require('should');
 const StorageService = require('../lib/storage-service');
 const HttpTestUtils = require('./utils/http');
@@ -158,6 +159,15 @@ describe('v1 API', function () {
         });
         done();
       });
+    });
+  });
+
+  describe('/v1/transit/default/decrypt endpoint', function () {
+    const endpoint = '/v1/transit/default/decrypt';
+    const body = { key: 'KEY', ciphertext: 'CTEXT'};
+
+    it('accepts POST requests', function (done) {
+      util.acceptPOSTRequest(endpoint, body).end(done);
     });
   });
 });

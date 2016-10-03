@@ -22,6 +22,16 @@ class HttpTestUtils {
   }
 
   /**
+   * Accept POST requests
+   * @param {String} endpoint
+   * @param {Object} body
+   * @returns {Test}
+   */
+  acceptPOSTRequest(endpoint, body) {
+    return this.request(endpoint, 'POST', STATUS_CODES.OK, body);
+  }
+
+  /**
    * Reject any other request type
    * @param {string} endpoint
    * @returns {Test}
@@ -49,7 +59,7 @@ class HttpTestUtils {
    * @param {number} code
    * @returns {Test}
    */
-  request(endpoint, type, code) {
+  request(endpoint, type, code, body) {
     let r = request(this.server);
 
     switch (type) {
@@ -57,7 +67,7 @@ class HttpTestUtils {
         r = r.get(endpoint);
         break;
       case 'POST':
-        r = r.post(endpoint);
+        r = r.post(endpoint).send(body);
         break;
       case 'DELETE':
         r = r.del(endpoint);
