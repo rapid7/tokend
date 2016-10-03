@@ -169,5 +169,9 @@ describe('v1 API', function () {
     it('accepts POST requests', function (done) {
       util.acceptPOSTRequest(endpoint, body).end(done);
     });
+
+    it('rejects non-POST requests', function () {
+      return util.rejectNonPOSTRequests(endpoint, body);
+    });
   });
 });

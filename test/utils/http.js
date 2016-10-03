@@ -43,6 +43,27 @@ class HttpTestUtils {
   }
 
   /**
+   * Test that all non-POST requests are rejected
+   * @param {String} endpoint - Endpoint for the request
+   * @param {Object} body - Body to send with the request
+   * @returns {Promise}
+   */
+  rejectNonPOSTRequests(endpoint, body) {
+    const promises = ['GET', 'PUT', 'DELETE'].map((type) => {
+      return new Promise((resolve, reject) => {
+        this.request(endpoint, type, STATUS_CODES.METHOD_NOT_ALLOWED, body, 'POST').end((err, res) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve(res);
+        });
+      });
+    });
+
+    return Promise.all(promises);
+  }
+
+  /**
    * Execute a callback against a supertest request
    * @param {string} endpoint
    * @param {function} callback
@@ -58,10 +79,15 @@ class HttpTestUtils {
    * @param {string} type
    * @param {number} code
    * @param {object} [body]
+   * @param {string} [allowedType]
    * @returns {Test}
    */
-  request(endpoint, type, code, body) {
+  request(endpoint, type, code, body, allowedType) {
     let r = request(this.server);
+
+    if (!allowedType) {
+      allowedType = 'GET';
+    }
 
     switch (type) {
       case 'GET':
@@ -85,7 +111,7 @@ class HttpTestUtils {
     }
 
     r = (code === STATUS_CODES.OK) ? r.expect('Content-Type', 'application/json; charset=utf-8') : r;
-    r = (code === STATUS_CODES.METHOD_NOT_ALLOWED) ? r.expect('Allow', 'GET') : r;
+    r = (code === STATUS_CODES.METHOD_NOT_ALLOWED) ? r.expect('Allow', allowedType) : r;
 
     return r
       .set('Accept', 'application/json')
