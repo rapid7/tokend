@@ -2,11 +2,15 @@ require 'json'
 require 'fileutils'
 require 'mkmf'
 require 'rake/clean'
+require 'octokit'
 
 include FileUtils
 
+CLIENT_ID = ENV['GITHUB_CLIENT_ID']
+CLIENT_TOKEN = ENV['GITHUB_CLIENT_TOKEN']
+
 def package_json
- @package_json ||= JSON.parse(File.read('package.json'))
+  @package_json ||= JSON.parse(File.read('package.json'))
 end
 
 def version
@@ -29,12 +33,16 @@ def homepage
   package_json['homepage']
 end
 
+def repo
+  package_json['repository']['url'].sub('.git', '')
+end
+
 def target_version
-  ::File.read(::File.join(@base_dir, '.nvmrc')).strip()
+  ::File.read(::File.join(base_dir, '.nvmrc')).strip.delete('v')
 end
 
 def max_version
-   target_version.split('.').first.delete('v').to_f + 1
+  target_version.split('.').first.to_f + 1
 end
 
 def install_dir
@@ -47,6 +55,20 @@ end
 
 def base_dir
   @base_dir ||= File.dirname(File.expand_path(__FILE__))
+end
+
+def pkg_dir
+  ::File.join(base_dir, 'pkg')
+end
+
+def github_client
+  @client unless @client.nil?
+  @client = Octokit::Client.new(:client_id => CLIENT_ID, :access_token => CLIENT_TOKEN)
+end
+
+def github_repo
+  @repo unless @repo.nil?
+  @repo = Octokit::Repository.from_url(repo)
 end
 
 task :install do
@@ -78,7 +100,7 @@ end
 
 
 task :chdir_pkg => [:package_dirs] do
-  cd ::File.join(base_dir, 'pkg')
+  cd pkg_dir
 end
 
 task :deb => [:chdir_pkg, :tokend_source] do
@@ -109,6 +131,29 @@ task :release do
   puts 'You can find directions here: https://github.com/blog/1547-release-your-software'
   puts
   puts 'Make sure you add release notes!'
+  cp ::File.join(base_dir, "#{name}-#{version}.tgz"), pkg_dir
+
+  begin
+    latest_release = github_client.latest_release(github_repo)
+  rescue Octokit::NotFound
+    latest_release = OpenStruct.new(name: 'master')
+  end
+
+  release = github_client.create_release(
+    github_repo,
+    "v#{version}",
+    :name => "v#{version}", :draft => true
+  )
+
+  [
+    ::File.join(pkg_dir, "#{name}-#{version}.tgz"),
+    ::File.join(pkg_dir, "#{name}-#{version}_amd64.deb")
+  ].each do |f|
+    github_client.upload_asset(release.url, f)
+  end
+  puts "Draft release created at #{release.html_url}. Make sure you add release notes!"
+  compare_url = "#{github_repo.url}/compare/#{latest_release.name}...#{release.name}"
+  puts "You can find a diff between this release and the previous one here: #{compare_url}"
 end
 
 CLEAN.include 'npm-shrinkwrap.json'
