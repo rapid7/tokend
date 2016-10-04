@@ -76,6 +76,16 @@ class MockSecretProvider {
   }
 }
 
+class MockTransitProvider {
+  initialize() {
+    return Promise.resolve({
+      data: {
+        plaintext: 'PTEXT'
+      }
+    });
+  }
+}
+
 class DelayedInitializeProvider {
 
   constructor(delay) {
@@ -240,6 +250,47 @@ describe('StorageService', function() {
       return storage.lookup('default', 'somesecret', NeverInitializeProvider).catch(() => {
         storage._managers.size.should.equal(1);
         storage._managers.has('/NeverInitializeProvider/default/somesecret').should.be.false();
+      });
+    });
+
+    it('should support Providers using Object secrets', function () {
+      const storage = setTokenProvider(new StorageService());
+
+      return storage.lookup('default', {key: 'KEY', ciphertext: 'CTEXT'}, MockTransitProvider)
+      .then((result) => {
+        storage._managers.size.should.equal(2);
+
+        result.should.eql({plaintext: 'PTEXT'});
+      });
+    });
+
+    it('should reuse managers for similar Object secrets', function () {
+      const storage = setTokenProvider(new StorageService());
+
+      const secret1 = storage.lookup('default', {ciphertext: 'CTEXT', key: 'KEY'}, MockTransitProvider);
+      const secret2 = storage.lookup('default', {key: 'KEY', ciphertext: 'CTEXT'}, MockTransitProvider);
+
+      return Promise.all([secret1, secret2]).then((results) => {
+        storage._managers.size.should.equal(2);
+
+        results.forEach((result) => {
+          result.should.eql({plaintext: 'PTEXT'});
+        });
+      });
+    });
+
+    it('should not reuse managers for unique Object secrets', function () {
+      const storage = setTokenProvider(new StorageService());
+
+      const secret1 = storage.lookup('default', {key: 'KEY1', ciphertext: 'CTEXT'}, MockTransitProvider);
+      const secret2 = storage.lookup('default', {key: 'KEY2', ciphertext: 'CTEXT'}, MockTransitProvider);
+
+      return Promise.all([secret1, secret2]).then((results) => {
+        storage._managers.size.should.equal(3);
+
+        results.forEach((result) => {
+          result.should.eql({plaintext: 'PTEXT'});
+        });
       });
     });
   });
