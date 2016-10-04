@@ -7,6 +7,7 @@ const sinon = require('sinon');
 const LeaseManager = require('../lib/lease-manager');
 const StorageService = require('../lib/storage-service');
 const TokenProvider = require('../lib/providers/token');
+const TransitProvider = require('../lib/providers/transit');
 
 /**
  * A mock SecretProvider that fails to initialize N times before succeeding
@@ -87,6 +88,7 @@ class MockTransitProvider {
     });
   }
 }
+MockTransitProvider.getSecretID = TransitProvider.getSecretID;
 
 class DelayedInitializeProvider {
 
