@@ -38,6 +38,7 @@ describe('Provider/Transit', function () {
       localVaultMock = null;
 
   before(function () {
+    nock.cleanAll();
     globalVaultMock = createVaultMock({global: true});
   });
 
@@ -51,6 +52,7 @@ describe('Provider/Transit', function () {
 
   after(function () {
     nock.removeInterceptor(globalVaultMock);
+    nock.cleanAll();
   });
 
   describe('TransitProvider#constructor', function () {
