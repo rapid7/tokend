@@ -1,5 +1,7 @@
 'use strict';
 
+require('./init');
+
 const should = require('should');
 const sinon = require('sinon');
 const LeaseManager = require('../lib/lease-manager');
