@@ -30,8 +30,6 @@ function createVaultMock(options) {
     .get('/v1/sys/mounts')
     .reply(STATUS_CODES.OK, {'transit/': {config: {default_lease_ttl: 0, max_lease_ttl: 0}, type: 'transit'}})
     .get('/v1/sys/auth')
-    .reply(STATUS_CODES.OK, {'token/': {type: 'token'}})
-    .post('/v1/sys/mounts/transit', {type: 'transit', description: 'Transit Secrets Backend transit'})
     .reply(STATUS_CODES.OK, {'token/': {type: 'token'}});
 }
 
@@ -40,6 +38,7 @@ describe('Provider/Transit', function () {
       localVaultMock = null;
 
   before(function () {
+    nock.cleanAll();
     globalVaultMock = createVaultMock({global: true});
   });
 
@@ -53,45 +52,46 @@ describe('Provider/Transit', function () {
 
   after(function () {
     nock.removeInterceptor(globalVaultMock);
+    nock.cleanAll();
   });
 
   describe('TransitProvider#constructor', function () {
-    it('requires key be provided', function () {
+    it('requires secret be provided', function () {
       [null, undefined, ''].forEach(function (value) {
         should.throws(() => {
-          return new TransitProvider(value, 'TOKEN', {ciphertext: 'CTEXT'});
-        }, preconditions.IllegalValueError, `invalid "key" argument: ${value}`);
+          return new TransitProvider(value, 'TOKEN');
+        }, preconditions.IllegalValueError, `invalid "secret" argument: ${value}`);
       });
     });
 
     it('requires token be provided', function () {
       [null, undefined, ''].forEach(function (value) {
         should.throws(() => {
-          return new TransitProvider('KEY', value, {ciphertext: 'CTEXT'});
+          return new TransitProvider({key: 'KEY', ciphertext: 'CTEXT'}, value);
         }, preconditions.IllegalValueError, `invalid "token" argument: ${value}`);
       });
     });
 
-    it('requires parameters be provided', function () {
+    it('requires secret.key be provided', function () {
       [null, undefined, ''].forEach(function (value) {
         should.throws(() => {
-          return new TransitProvider('KEY', 'TOKEN', value);
-        }, preconditions.IllegalValueError, `invalid "parameters" argument: ${value}`);
+          return new TransitProvider({key: value, ciphertext: 'CTEXT'}, 'TOKEN');
+        }, preconditions.IllegalValueError, `invalid "secret.key" argument: ${value}`);
       });
     });
 
-    it('requires parameters.ciphertext be provided', function () {
+    it('requires secret.ciphertext be provided', function () {
       [null, undefined, ''].forEach(function (value) {
         should.throws(() => {
-          return new TransitProvider('KEY', 'TOKEN', {ciphertext: value});
-        }, preconditions.IllegalValueError, `invalid "parameters.ciphertext" argument: ${value}`);
+          return new TransitProvider({key: 'KEY', ciphertext: value}, 'TOKEN');
+        }, preconditions.IllegalValueError, `invalid "secret.ciphertext" argument: ${value}`);
       });
     });
   });
 
   describe('TransitProvider#initialize', function () {
     it('calls Vault once when initializing', function (done) {
-      const transit = new TransitProvider('KEY', 'TOKEN', {ciphertext: 'CTEXT'});
+      const transit = new TransitProvider({key: 'KEY', ciphertext: 'CTEXT'}, 'TOKEN');
 
       localVaultMock.post('/v1/transit/decrypt/KEY', {
         ciphertext: 'CTEXT'
@@ -119,7 +119,7 @@ describe('Provider/Transit', function () {
     });
 
     it('fails with an error if the key does not exist', function (done) {
-      const transit = new TransitProvider('INVALID-KEY', 'TOKEN', {ciphertext: 'CTEXT'});
+      const transit = new TransitProvider({key: 'INVALID-KEY', ciphertext: 'CTEXT'}, 'TOKEN');
 
       localVaultMock.post('/v1/transit/decrypt/INVALID-KEY', {
         ciphertext: 'CTEXT'
@@ -141,7 +141,7 @@ describe('Provider/Transit', function () {
 
   describe('TransitProvider#renew', function () {
     it('calls Vault every time when renewing', function (done) {
-      const transit = new TransitProvider('KEY', 'TOKEN', {ciphertext: 'CTEXT'});
+      const transit = new TransitProvider({key: 'KEY', ciphertext: 'CTEXT'}, 'TOKEN');
 
       localVaultMock.post('/v1/transit/decrypt/KEY', {
         ciphertext: 'CTEXT'
@@ -175,7 +175,7 @@ describe('Provider/Transit', function () {
     });
 
     it('fails with an error if the key does not exist', function (done) {
-      const transit = new TransitProvider('INVALID-KEY', 'TOKEN', {ciphertext: 'CTEXT'});
+      const transit = new TransitProvider({key: 'INVALID-KEY', ciphertext: 'CTEXT'}, 'TOKEN');
 
       localVaultMock.post('/v1/transit/decrypt/INVALID-KEY', {
         ciphertext: 'CTEXT'
