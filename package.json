@@ -33,7 +33,7 @@
     "lodash": "^4.13.0",
     "morgan": "^1.7.0",
     "nconf": "^0.8.4",
-    "vaulted": "chiefy/vaulted#785378a",
+    "vaulted": "chiefy/vaulted#5b4c6f7",
     "winston": "^2.2.0",
     "yargs": "^4.7.0"
   },
