@@ -195,5 +195,22 @@ describe('v1 API', function () {
         done();
       });
     });
+
+    it('bubbles errors up to the caller', function(done) {
+      server.close();
+      server = makeServer(new StorageServiceMockWithError());
+      util = new HttpTestUtils(server);
+
+      util.testEndpointPOSTResponse(endpoint, body, (err, res) => {
+        res.body.should.eql({
+          error: {
+            message: 'Funky looking error message',
+            name: 'Error'
+          }
+        });
+
+        done();
+      });
+    });
   });
 });
