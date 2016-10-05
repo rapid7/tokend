@@ -1,6 +1,8 @@
 require 'json'
 require 'fileutils'
 require 'mkmf'
+require 'aws-sdk'
+require 'logger'
 require 'rake/clean'
 require 'octokit'
 
@@ -8,6 +10,7 @@ include FileUtils
 
 CLIENT_ID = ENV['GITHUB_CLIENT_ID']
 CLIENT_TOKEN = ENV['GITHUB_CLIENT_TOKEN']
+ARTIFACT_BUCKET = ENV['ARTIFACT_BUCKET']
 
 def package_json
   @package_json ||= JSON.parse(File.read('package.json'))
@@ -122,8 +125,16 @@ task :deb => [:chdir_pkg, :tokend_source] do
   sh command
 end
 
-desc "Package #{name}"
-task :package => [:install, :shrinkwrap, :pack, :deb]
+task :upload_packages => [:deb] do
+  mkdir 'copy_to_s3'
+  deb = Dir["#{name}_#{version}_*.deb"].first
+  cp deb, 'copy_to_s3/'
+  s3 = Aws::S3::Resource.new(region: 'us-east-1', logger: Logger.new(STDOUT))
+  Dir["copy_to_s3/**/#{name}*"].each do |package|
+    upload_package = ::File.basename(package)
+    s3.bucket(ARTIFACT_BUCKET).object("#{name}/#{upload_package}").upload_file(package)
+  end
+end
 
 desc "Release #{name} and prepare to create a release on github.com"
 task :release do
