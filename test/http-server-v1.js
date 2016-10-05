@@ -31,6 +31,14 @@ class StorageServiceMockWithSecretResponse {
   }
 }
 
+class StorageServiceMockWithTransitResponse {
+  lookup(token, secret, ProviderType) {
+    return Promise.resolve({
+      plaintext: 'UFRFWFQ='
+    });
+  }
+}
+
 class StorageServiceMockWithError {
   lookup(token, secret, ProviderType) {
     return Promise.reject(new Error('Funky looking error message'));
@@ -172,6 +180,20 @@ describe('v1 API', function () {
 
     it('rejects non-POST requests', function () {
       return util.rejectNonPOSTRequests(endpoint, body);
+    });
+
+    it('decodes Base64 encoded secrets', function (done) {
+      server.close();
+      server = makeServer(new StorageServiceMockWithTransitResponse());
+      util = new HttpTestUtils(server);
+
+      util.testEndpointPOSTResponse(endpoint, body, (err, res) => {
+        res.body.should.eql({
+          plaintext: 'PTEXT'
+        });
+
+        done();
+      });
     });
   });
 });

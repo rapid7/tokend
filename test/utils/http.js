@@ -74,6 +74,17 @@ class HttpTestUtils {
   }
 
   /**
+   * Execute a callback against a supertest POST request
+   * @param {String} endpoint - The endpoint to request
+   * @param {String} body - The body to POST
+   * @param {Function} callback - called with (err, res) when the request completes
+   * @returns {Test}
+   */
+  testEndpointPOSTResponse(endpoint, body, callback) {
+    return this.request(endpoint, 'POST', STATUS_CODES.OK, body).end(callback);
+  }
+
+  /**
    * Create the supertest Test
    * @param {string} endpoint
    * @param {string} type
