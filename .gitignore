@@ -42,3 +42,8 @@ node_modules
 .builderator/
 
 cookbook/metadata.json
+
+# Build artifacts
+*.tar.gz
+*.tgz
+npm-shrinkwrap.json
