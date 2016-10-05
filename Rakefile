@@ -53,12 +53,12 @@ def config_dir
   ::File.join(install_dir, 'config')
 end
 
-def base_dir
-  @base_dir ||= File.dirname(File.expand_path(__FILE__))
-end
-
 def pkg_dir
   ::File.join(base_dir, 'pkg')
+end
+
+def base_dir
+  @base_dir ||= File.dirname(File.expand_path(__FILE__))
 end
 
 def github_client
@@ -97,7 +97,6 @@ task :tokend_source => [:install] do
   end
   cp ::File.join(base_dir, 'config', 'defaults.json'), ::File.join(base_dir, config_dir)
 end
-
 
 task :chdir_pkg => [:package_dirs] do
   cd pkg_dir
