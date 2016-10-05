@@ -32,10 +32,14 @@ This can be accomplished by running the following commands:
 
 ```bash
 $ npm version minor
-$ rake
+$ bundle exec rake default
 ```
 
-Then following the steps to create the release on [github.com]
+To be able to create a new release on github.com, you must have the following environment variables set:
+* `GITHUB_CLIENT_ID`
+* `GITHUB_CLIENT_TOKEN`
+
+and the user and token must have the appropriate permissions in this repository.
 
 [Node.js]: https://nodejs.org/en/
 [travis-img]: https://travis-ci.org/rapid7/tokend.svg?branch=master
