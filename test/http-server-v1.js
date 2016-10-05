@@ -201,7 +201,11 @@ describe('v1 API', function () {
       server = makeServer(new StorageServiceMockWithError());
       util = new HttpTestUtils(server);
 
-      util.testEndpointPOSTResponse(endpoint, body, (err, res) => {
+      util.testBadEndpointPOSTResponse(endpoint, body, (err, res) => {
+        if (err) {
+          return done(err);
+        }
+
         res.body.should.eql({
           error: {
             message: 'Funky looking error message',

@@ -85,6 +85,17 @@ class HttpTestUtils {
   }
 
   /**
+   * Execute a callback against a bad supertest POST request
+   * @param {String} endpoint - The endpoint to request
+   * @param {String} body - The body to POST
+   * @param {Function} callback - called with (err, res) when the request completes
+   * @returns {Test}
+   */
+  testBadEndpointPOSTResponse(endpoint, body, callback) {
+    return this.request(endpoint, 'POST', STATUS_CODES.BAD_REQUEST, body).end(callback);
+  }
+
+  /**
    * Create the supertest Test
    * @param {string} endpoint
    * @param {string} type
@@ -121,7 +132,7 @@ class HttpTestUtils {
         break;
     }
 
-    r = (code === STATUS_CODES.OK) ? r.expect('Content-Type', 'application/json; charset=utf-8') : r;
+    r = (code === STATUS_CODES.OK || code === STATUS_CODES.BAD_REQUEST) ? r.expect('Content-Type', 'application/json; charset=utf-8') : r;
     r = (code === STATUS_CODES.METHOD_NOT_ALLOWED) ? r.expect('Allow', allowedType) : r;
 
     return r
