@@ -94,7 +94,7 @@ task :package_dirs do
   mkdir_p ::File.join(base_dir, config_dir)
 end
 
-task :tokend_source => [:install] do
+task :source => [:install] do
   ['bin/', 'lib/', 'node_modules/', 'LICENSE', 'package.json'].each do |src|
     cp_r ::File.join(base_dir, src), ::File.join(base_dir, install_dir)
   end
@@ -105,7 +105,7 @@ task :chdir_pkg => [:package_dirs] do
   cd pkg_dir
 end
 
-task :deb => [:chdir_pkg, :tokend_source] do
+task :deb => [:chdir_pkg, :source] do
   command = [
     'bundle',
     'exec',
