@@ -137,12 +137,12 @@ task :upload_packages => [:deb] do
 end
 
 desc "Release #{name} and prepare to create a release on github.com"
-task :release do
+task :release => [:package] do
   puts
   puts "Create a new #{version} release on github.com and upload the #{name} tarball"
   puts 'You can find directions here: https://github.com/blog/1547-release-your-software'
-  puts
   puts 'Make sure you add release notes!'
+
   cp ::File.join(base_dir, "#{name}-#{version}.tgz"), pkg_dir
 
   begin
@@ -167,6 +167,9 @@ task :release do
   compare_url = "#{github_repo.url}/compare/#{latest_release.name}...#{release.name}"
   puts "You can find a diff between this release and the previous one here: #{compare_url}"
 end
+
+desc "Package #{name}"
+task :package => [:install, :shrinkwrap, :pack, :deb]
 
 CLEAN.include 'npm-shrinkwrap.json'
 CLEAN.include "#{name}-*.tgz"
