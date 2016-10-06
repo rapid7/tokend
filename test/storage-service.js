@@ -116,6 +116,48 @@ class NeverInitializeProvider {
   renew() {}
 }
 
+class NonRenewingProvider {
+  initialize() {
+    return Promise.resolve({
+      renewable: false,
+      data: {plaintext: 'PTEXT'}
+    });
+  }
+
+  renew() {
+    return Promise.resolve({
+      renewable: false,
+      data: {plaintext: 'PTEXT'}
+    });
+  }
+}
+NonRenewingProvider.getSecretID = TransitProvider.getSecretID;
+
+class DelayedNonRenewingProvider {
+  constructor(delay) {
+    this.delay = delay;
+  }
+
+  initialize() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve({
+          renewable: false,
+          data: {plaintext: 'PTEXT'}
+        });
+      }, this.delay);
+    });
+  }
+
+  renew() {
+    return Promise.resolve({
+      renewable: false,
+      data: {plaintext: 'PTEXT'}
+    });
+  }
+}
+DelayedNonRenewingProvider.getSecretID = TransitProvider.getSecretID;
+
 function setTokenProvider(storage, provider) {
   if (!provider) {
     provider = new MockTokenProvider();
@@ -295,6 +337,26 @@ describe('StorageService', function() {
         results.forEach((result) => {
           result.should.eql({plaintext: 'PTEXT'});
         });
+      });
+    });
+
+    it('should not cache managers for non-renewable secrets that are immediate', function () {
+      const storage = setTokenProvider(new StorageService());
+
+      return storage.lookup('default', {key: 'KEY', ciphertext: 'CTEXT'}, NonRenewingProvider)
+      .then((result) => {
+        storage._managers.size.should.equal(1);
+        result.should.eql({plaintext: 'PTEXT'});
+      });
+    });
+
+    it('should not cache managers for non-renewable secrets that are delayed', function () {
+      const storage = setTokenProvider(new StorageService(), new DelayedNonRenewingProvider(1000));
+
+      return storage.lookup('default', {key: 'KEY', ciphertext: 'CTEXT'}, DelayedNonRenewingProvider)
+      .then((result) => {
+        storage._managers.size.should.equal(1);
+        result.should.eql({plaintext: 'PTEXT'});
       });
     });
   });
