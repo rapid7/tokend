@@ -35,8 +35,12 @@ class FailToRenewProvider {
  */
 class CountingInitializeProvider {
 
-  constructor(count) {
+  constructor(count, data) {
     this.count = count;
+    this.data = Object.assign({
+      data: 'SECRET',
+      lease_duration: 1
+    }, data);
   }
 
   initialize() {
@@ -46,10 +50,7 @@ class CountingInitializeProvider {
         reject(new Error(`Need ${this.count} more calls to initialize`));
       }
       else {
-        resolve({
-          data: 'SECRET',
-          lease_duration: 1
-        });
+        resolve(this.data);
       }
     });
   }
@@ -117,6 +118,22 @@ class ChangingTimeoutProvider {
   }
 }
 
+class ChangingRenewableProvider {
+  initialize() {
+    return Promise.resolve({
+      data: 'SECRET',
+      renewable: true
+    });
+  }
+
+  renew() {
+    return Promise.resolve({
+      data: 'SECRET',
+      renewable: false
+    });
+  }
+}
+
 describe('LeaseManager#constructor', function () {
   it('has a default status of PENDING', function () {
     should(new LeaseManager().status).eql('PENDING');
@@ -128,6 +145,10 @@ describe('LeaseManager#constructor', function () {
 
   it('has a default lease duration that is zero', function () {
     should(new LeaseManager().lease_duration).eql(0);
+  });
+
+  it('has a default renewable flag that is true', function () {
+    should(new LeaseManager().renewable).be.true();
   });
 });
 
@@ -156,6 +177,14 @@ describe('LeaseManager#initialize', function () {
     });
   });
 
+  it('changes renewable flag when the provider immediately succeeds', function () {
+    const manager = new LeaseManager(new CountingInitializeProvider(0, {renewable: false}));
+
+    return manager.initialize().then(() => {
+      manager.renewable.should.be.false();
+    });
+  });
+
   it('change status to ready when the provider eventually succeeds', function () {
     const manager = new LeaseManager(new CountingInitializeProvider(2));
 
@@ -177,6 +206,14 @@ describe('LeaseManager#initialize', function () {
 
     return manager.initialize().catch(() => manager.initialize().then(() => {
       manager.lease_duration.should.eql(1);
+    }));
+  });
+
+  it('changes renewable flag when the provider eventually succeeds', function () {
+    const manager = new LeaseManager(new CountingInitializeProvider(2, {renewable: false}));
+
+    return manager.initialize().catch(() => manager.initialize().then(() => {
+      manager.renewable.should.be.false();
     }));
   });
 
@@ -252,6 +289,17 @@ describe('LeaseManager#_renew', function () {
     manager.once('error', () => {
       manager.data.should.not.be.null();
       manager.lease_duration.should.not.equal(0);
+      done();
+    });
+
+    manager.initialize();
+  });
+
+  it('should change the renewable flag if the renewable status changes', function (done) {
+    const manager = new LeaseManager(new ChangingRenewableProvider());
+
+    manager.once('renewed', () => {
+      manager.renewable.should.be.false();
       done();
     });
 
