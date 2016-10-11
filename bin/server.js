@@ -17,6 +17,7 @@ const express = require('express');
 const HTTP = require('http');
 const Path = require('path');
 const Logger = require('../lib/logger');
+const BodyParser = require('body-parser');
 
 const app = express();
 const server = HTTP.createServer(app);
@@ -48,6 +49,9 @@ global.Log = Logger.attach(Config.get('log:level'));
 
 // Add request logging middleware
 app.use(Logger.requests(Log, Config.get('log:level')));
+
+// Add middleware for paring JSON requests
+app.use(BodyParser.json());
 
 const StorageService = require('../lib/storage-service');
 
