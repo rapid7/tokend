@@ -1,5 +1,6 @@
 'use strict';
 
+require('./init');
 require('should');
 const StorageService = require('../lib/storage-service');
 const HttpTestUtils = require('./utils/http');
@@ -26,6 +27,14 @@ class StorageServiceMockWithSecretResponse {
     return Promise.resolve({
       username: 'bob',
       password: 'my-awesome-password123'
+    });
+  }
+}
+
+class StorageServiceMockWithTransitResponse {
+  lookup(token, secret, ProviderType) {
+    return Promise.resolve({
+      plaintext: 'UFRFWFQ='
     });
   }
 }
@@ -156,6 +165,54 @@ describe('v1 API', function () {
             name: 'Error'
           }
         });
+        done();
+      });
+    });
+  });
+
+  describe('/v1/transit/default/decrypt endpoint', function () {
+    const endpoint = '/v1/transit/default/decrypt';
+    const body = {key: 'KEY', ciphertext: 'CTEXT'};
+
+    it('accepts POST requests', function (done) {
+      util.acceptPOSTRequest(endpoint, body).end(done);
+    });
+
+    it('rejects non-POST requests', function () {
+      return util.rejectNonPOSTRequests(endpoint, body);
+    });
+
+    it('decodes Base64 encoded secrets', function (done) {
+      server.close();
+      server = makeServer(new StorageServiceMockWithTransitResponse());
+      util = new HttpTestUtils(server);
+
+      util.testEndpointPOSTResponse(endpoint, body, (err, res) => {
+        res.body.should.eql({
+          plaintext: 'PTEXT'
+        });
+
+        done();
+      });
+    });
+
+    it('bubbles errors up to the caller', function(done) {
+      server.close();
+      server = makeServer(new StorageServiceMockWithError());
+      util = new HttpTestUtils(server);
+
+      util.testBadEndpointPOSTResponse(endpoint, body, (err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        res.body.should.eql({
+          error: {
+            message: 'Funky looking error message',
+            name: 'Error'
+          }
+        });
+
         done();
       });
     });

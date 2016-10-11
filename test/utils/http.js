@@ -22,6 +22,16 @@ class HttpTestUtils {
   }
 
   /**
+   * Accept POST requests
+   * @param {String} endpoint
+   * @param {Object} body
+   * @returns {Test}
+   */
+  acceptPOSTRequest(endpoint, body) {
+    return this.request(endpoint, 'POST', STATUS_CODES.OK, body);
+  }
+
+  /**
    * Reject any other request type
    * @param {string} endpoint
    * @returns {Test}
@@ -30,6 +40,27 @@ class HttpTestUtils {
     this.request(endpoint, 'POST', STATUS_CODES.METHOD_NOT_ALLOWED);
     this.request(endpoint, 'PUT', STATUS_CODES.METHOD_NOT_ALLOWED);
     return this.request(endpoint, 'DELETE', STATUS_CODES.METHOD_NOT_ALLOWED);
+  }
+
+  /**
+   * Test that all non-POST requests are rejected
+   * @param {String} endpoint - Endpoint for the request
+   * @param {Object} body - Body to send with the request
+   * @returns {Promise}
+   */
+  rejectNonPOSTRequests(endpoint, body) {
+    const promises = ['GET', 'PUT', 'DELETE'].map((type) => {
+      return new Promise((resolve, reject) => {
+        this.request(endpoint, type, STATUS_CODES.METHOD_NOT_ALLOWED, body, 'POST').end((err, res) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve(res);
+        });
+      });
+    });
+
+    return Promise.all(promises);
   }
 
   /**
@@ -43,21 +74,49 @@ class HttpTestUtils {
   }
 
   /**
+   * Execute a callback against a supertest POST request
+   * @param {String} endpoint - The endpoint to request
+   * @param {String} body - The body to POST
+   * @param {Function} callback - called with (err, res) when the request completes
+   * @returns {Test}
+   */
+  testEndpointPOSTResponse(endpoint, body, callback) {
+    return this.request(endpoint, 'POST', STATUS_CODES.OK, body).end(callback);
+  }
+
+  /**
+   * Execute a callback against a bad supertest POST request
+   * @param {String} endpoint - The endpoint to request
+   * @param {String} body - The body to POST
+   * @param {Function} callback - called with (err, res) when the request completes
+   * @returns {Test}
+   */
+  testBadEndpointPOSTResponse(endpoint, body, callback) {
+    return this.request(endpoint, 'POST', STATUS_CODES.BAD_REQUEST, body).end(callback);
+  }
+
+  /**
    * Create the supertest Test
    * @param {string} endpoint
    * @param {string} type
    * @param {number} code
+   * @param {object} [body]
+   * @param {string} [allowedType]
    * @returns {Test}
    */
-  request(endpoint, type, code) {
+  request(endpoint, type, code, body, allowedType) {
     let r = request(this.server);
+
+    if (!allowedType) {
+      allowedType = 'GET';
+    }
 
     switch (type) {
       case 'GET':
         r = r.get(endpoint);
         break;
       case 'POST':
-        r = r.post(endpoint);
+        r = r.post(endpoint).send(body);
         break;
       case 'DELETE':
         r = r.del(endpoint);
@@ -73,8 +132,8 @@ class HttpTestUtils {
         break;
     }
 
-    r = (code === STATUS_CODES.OK) ? r.expect('Content-Type', 'application/json; charset=utf-8') : r;
-    r = (code === STATUS_CODES.METHOD_NOT_ALLOWED) ? r.expect('Allow', 'GET') : r;
+    r = (code === STATUS_CODES.OK || code === STATUS_CODES.BAD_REQUEST) ? r.expect('Content-Type', 'application/json; charset=utf-8') : r;
+    r = (code === STATUS_CODES.METHOD_NOT_ALLOWED) ? r.expect('Allow', allowedType) : r;
 
     return r
       .set('Accept', 'application/json')
