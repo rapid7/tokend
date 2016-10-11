@@ -121,10 +121,6 @@ class NonRenewingProvider {
 }
 
 class DelayedNonRenewingProvider {
-  constructor(delay) {
-    this.delay = delay;
-  }
-
   initialize() {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
@@ -132,7 +128,7 @@ class DelayedNonRenewingProvider {
           renewable: false,
           data: {plaintext: 'PTEXT'}
         });
-      }, this.delay);
+      }, 200);
     });
   }
 
@@ -296,7 +292,7 @@ describe('StorageService', function() {
     });
 
     it('should not cache managers for non-renewable secrets that are delayed', function () {
-      const storage = setTokenProvider(new StorageService(), new DelayedNonRenewingProvider(1000));
+      const storage = setTokenProvider(new StorageService());
 
       return storage.lookup('default', {key: 'KEY', ciphertext: 'CTEXT'}, DelayedNonRenewingProvider)
       .then((result) => {
