@@ -134,6 +134,20 @@ class ChangingRenewableProvider {
   }
 }
 
+class NonRenewableProvider {
+  initialize() {
+    return Promise.resolve({
+      data: 'SECRET',
+      renewable: false,
+      lease_duration: 1
+    });
+  }
+
+  renew() {
+    throw new Error('renew() should never be called!');
+  }
+}
+
 describe('LeaseManager#constructor', function () {
   it('has a default status of PENDING', function () {
     should(new LeaseManager().status).eql('PENDING');
@@ -304,5 +318,14 @@ describe('LeaseManager#_renew', function () {
     });
 
     manager.initialize();
+  });
+
+  it('should not be called if the provider is not renewable', function () {
+    const manager = new LeaseManager(new NonRenewableProvider());
+
+    return manager.initialize().then(() => {
+      should(manager._timer).be.null();
+      should(manager._timeout).be.null();
+    });
   });
 });
