@@ -117,6 +117,16 @@ class ChangingTimeoutProvider {
   }
 }
 
+class NonRenewableProvider {
+  initialize() {
+    return Promise.resolve({
+      data: 'SECRET',
+      renewable: false,
+      lease_duration: 1
+    });
+  }
+}
+
 describe('LeaseManager#constructor', function () {
   it('has a default status of PENDING', function () {
     should(new LeaseManager().status).eql('PENDING');
@@ -128,6 +138,10 @@ describe('LeaseManager#constructor', function () {
 
   it('has a default lease duration that is zero', function () {
     should(new LeaseManager().lease_duration).eql(0);
+  });
+
+  it('has a default renewable flag that is false', function () {
+    should(new LeaseManager().renewable).be.false();
   });
 });
 
@@ -154,6 +168,12 @@ describe('LeaseManager#initialize', function () {
     return manager.initialize().then(() => {
       manager.lease_duration.should.eql(1);
     });
+  });
+
+  it('changes renewable flag to true if the provider can be renewed', function () {
+    const manager = new LeaseManager(new CountingInitializeProvider(0));
+
+    should(manager.renewable).be.true();
   });
 
   it('change status to ready when the provider eventually succeeds', function () {
@@ -256,5 +276,15 @@ describe('LeaseManager#_renew', function () {
     });
 
     manager.initialize();
+  });
+
+  it('should not be called if the provider is not renewable', function () {
+    const manager = new LeaseManager(new NonRenewableProvider());
+
+    return manager.initialize().then(() => {
+      should(manager.renewable).be.false();
+      should(manager._timer).be.null();
+      should(manager._timeout).be.null();
+    });
   });
 });

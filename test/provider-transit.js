@@ -90,10 +90,16 @@ describe('Provider/Transit', function () {
   });
 
   describe('TransitProvider#initialize', function () {
-    it('calls Vault once when initializing', function (done) {
+    it('calls Vault every time when initializing', function (done) {
       const transit = new TransitProvider({key: 'KEY', ciphertext: 'CTEXT'}, 'TOKEN');
 
       localVaultMock.post('/v1/transit/decrypt/KEY', {
+        ciphertext: 'CTEXT'
+      })
+      .reply(STATUS_CODES.OK, {
+        plaintext: 'PTEXT'
+      })
+      .post('/v1/transit/decrypt/KEY', {
         ciphertext: 'CTEXT'
       })
       .reply(STATUS_CODES.OK, {
@@ -129,62 +135,6 @@ describe('Provider/Transit', function () {
       });
 
       transit.initialize()
-      .then(() => done(new Error('Invalid keys should fail!')))
-      .catch((err) => {
-        should(err).be.instanceOf(Error);
-
-        localVaultMock.done();
-        done();
-      });
-    });
-  });
-
-  describe('TransitProvider#renew', function () {
-    it('calls Vault every time when renewing', function (done) {
-      const transit = new TransitProvider({key: 'KEY', ciphertext: 'CTEXT'}, 'TOKEN');
-
-      localVaultMock.post('/v1/transit/decrypt/KEY', {
-        ciphertext: 'CTEXT'
-      })
-      .reply(STATUS_CODES.OK, {
-        plaintext: 'PTEXT'
-      })
-      .post('/v1/transit/decrypt/KEY', {
-        ciphertext: 'CTEXT'
-      })
-      .reply(STATUS_CODES.OK, {
-        plaintext: 'PTEXT'
-      });
-
-      transit.renew()
-      .then((retrievedPlaintext) => {
-        should(retrievedPlaintext).eql({
-          plaintext: 'PTEXT'
-        });
-      })
-      .then(() => transit.renew())
-      .then((renewedPlaintext) => {
-        should(renewedPlaintext).eql({
-          plaintext: 'PTEXT'
-        });
-
-        localVaultMock.done();
-        done();
-      })
-      .catch(done);
-    });
-
-    it('fails with an error if the key does not exist', function (done) {
-      const transit = new TransitProvider({key: 'INVALID-KEY', ciphertext: 'CTEXT'}, 'TOKEN');
-
-      localVaultMock.post('/v1/transit/decrypt/INVALID-KEY', {
-        ciphertext: 'CTEXT'
-      })
-      .reply(STATUS_CODES.BAD_REQUEST, {
-        errors: ['policy not found']
-      });
-
-      transit.renew()
       .then(() => done(new Error('Invalid keys should fail!')))
       .catch((err) => {
         should(err).be.instanceOf(Error);

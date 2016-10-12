@@ -1,5 +1,7 @@
 'use strict';
 
+require('./init');
+
 const should = require('should');
 const sinon = require('sinon');
 const LeaseManager = require('../lib/lease-manager');
@@ -57,6 +59,8 @@ class DelayedMockTokenProvider {
       setTimeout(() => resolve(this.data), 1000);
     });
   }
+
+  renew() {}
 }
 
 class MockSecretProvider {
@@ -74,6 +78,8 @@ class MockSecretProvider {
       }
     });
   }
+
+  renew() {}
 }
 
 class DelayedInitializeProvider {
@@ -100,6 +106,28 @@ class NeverInitializeProvider {
   }
 
   renew() {}
+}
+
+class NonRenewingProvider {
+  initialize() {
+    return Promise.resolve({
+      renewable: false,
+      data: {plaintext: 'PTEXT'}
+    });
+  }
+}
+
+class DelayedNonRenewingProvider {
+  initialize() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve({
+          renewable: false,
+          data: {plaintext: 'PTEXT'}
+        });
+      }, 200);
+    });
+  }
 }
 
 function setTokenProvider(storage, provider) {
@@ -240,6 +268,26 @@ describe('StorageService', function() {
       return storage.lookup('default', 'somesecret', NeverInitializeProvider).catch(() => {
         storage._managers.size.should.equal(1);
         storage._managers.has('/NeverInitializeProvider/default/somesecret').should.be.false();
+      });
+    });
+
+    it('should not cache managers for non-renewable secrets that are immediate', function () {
+      const storage = setTokenProvider(new StorageService());
+
+      return storage.lookup('default', {key: 'KEY', ciphertext: 'CTEXT'}, NonRenewingProvider)
+      .then((result) => {
+        storage._managers.size.should.equal(1);
+        result.should.eql({plaintext: 'PTEXT'});
+      });
+    });
+
+    it('should not cache managers for non-renewable secrets that are delayed', function () {
+      const storage = setTokenProvider(new StorageService());
+
+      return storage.lookup('default', {key: 'KEY', ciphertext: 'CTEXT'}, DelayedNonRenewingProvider)
+      .then((result) => {
+        storage._managers.size.should.equal(1);
+        result.should.eql({plaintext: 'PTEXT'});
       });
     });
   });
