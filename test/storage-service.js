@@ -59,6 +59,8 @@ class DelayedMockTokenProvider {
       setTimeout(() => resolve(this.data), 1000);
     });
   }
+
+  renew() {}
 }
 
 class MockSecretProvider {
@@ -76,6 +78,8 @@ class MockSecretProvider {
       }
     });
   }
+
+  renew() {}
 }
 
 class DelayedInitializeProvider {
@@ -111,13 +115,6 @@ class NonRenewingProvider {
       data: {plaintext: 'PTEXT'}
     });
   }
-
-  renew() {
-    return Promise.resolve({
-      renewable: false,
-      data: {plaintext: 'PTEXT'}
-    });
-  }
 }
 
 class DelayedNonRenewingProvider {
@@ -129,13 +126,6 @@ class DelayedNonRenewingProvider {
           data: {plaintext: 'PTEXT'}
         });
       }, 200);
-    });
-  }
-
-  renew() {
-    return Promise.resolve({
-      renewable: false,
-      data: {plaintext: 'PTEXT'}
     });
   }
 }
