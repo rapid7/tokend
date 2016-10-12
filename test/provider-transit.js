@@ -90,10 +90,16 @@ describe('Provider/Transit', function () {
   });
 
   describe('TransitProvider#initialize', function () {
-    it('calls Vault once when initializing', function (done) {
+    it('calls Vault every time when initializing', function (done) {
       const transit = new TransitProvider({key: 'KEY', ciphertext: 'CTEXT'}, 'TOKEN');
 
       localVaultMock.post('/v1/transit/decrypt/KEY', {
+        ciphertext: 'CTEXT'
+      })
+      .reply(STATUS_CODES.OK, {
+        plaintext: 'PTEXT'
+      })
+      .post('/v1/transit/decrypt/KEY', {
         ciphertext: 'CTEXT'
       })
       .reply(STATUS_CODES.OK, {
