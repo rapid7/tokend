@@ -131,16 +131,20 @@ describe('Provider/Token', function() {
       const resp = {
         lease_duration: 300, // eslint-disable-line rapid7/static-magic-numbers
         renewable: true,
-        data: {token: 'somereallycooltoken'}
+        client_token: 'somereallycooltoken',
+        policies: ['web', 'stage'],
+        metadata: {user: 'me!'}
       };
 
       nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
 
       return this.token.initialize().then((data) => {
         data.should.eql({
-          lease_id: resp.data.token,
+          lease_id: resp.client_token,
           lease_duration: resp.lease_duration,
-          data: resp.data
+          data: {
+            token: resp.client_token
+          }
         });
       }).catch((err) => {
         done(err);
