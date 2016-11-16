@@ -42,7 +42,8 @@ Config.required([
   'vault:port',
   'vault:token_ttl',
   'warden:host',
-  'warden:port'
+  'warden:port',
+  'warden:path'
 ]);
 
 global.Log = Logger.attach(Config.get('log:level'));

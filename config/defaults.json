@@ -12,5 +12,9 @@
   "log": {
     "level": "INFO",
     "json": true
+  },
+  "warden": {
+    "port": 8705,
+    "path": "/v1/authenticate"
   }
 }

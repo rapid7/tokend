@@ -31,7 +31,8 @@ specified in order for Tokend to run.
   },
   "warden": {
     "host": "127.0.0.1",
-    "port": 3000
+    "port": 3000,
+    "path": "/v1/authenticate"
   }
 }
 ```
@@ -88,6 +89,7 @@ exposed for development purposes.
 
 	* `host` - The hostname for Warden.
   * `port` - The port for Warden.
+  * `path` - The Warden endpoint to authenticate against.
 
 * `service` - These settings control the HTTP API.
 
