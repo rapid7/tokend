@@ -23,13 +23,12 @@ class DelayedEventEmitter extends EventEmitter {
   initialize() {
     setTimeout(() => {
       this.initialized = true;
-      this.emit('ready')
+      this.emit('ready');
     }, this.delay);
   }
 }
 
 describe('Util/onceWithTimeout', function() {
-
   it('requires valid arguments', function() {
     const emitter = new DelayedEventEmitter(0);
 
@@ -51,12 +50,12 @@ describe('Util/onceWithTimeout', function() {
 
     const promise1 = onceWithTimeout(emitter, 'ready')
       .then(() => {
-        should(emitter.initialized).eql(true)
+        should(emitter.initialized).eql(true);
       });
 
     const promise2 = onceWithTimeout(emitter, 'ready', 0)
       .then(() => {
-        should(emitter.initialized).eql(true)
+        should(emitter.initialized).eql(true);
       });
 
     emitter.initialize();
@@ -70,7 +69,7 @@ describe('Util/onceWithTimeout', function() {
 
     const promise = onceWithTimeout(emitter, 'ready', 2 * delay)
       .then(() => {
-        should(emitter.initialized).eql(true)
+        should(emitter.initialized).eql(true);
       });
 
     emitter.initialize();
@@ -105,7 +104,7 @@ describe('Util/onceWithTimeout', function() {
 
     const promise2 = onceWithTimeout(emitter, 'ready', 2 * delay)
       .then(() => {
-        should(emitter.initialized).eql(true)
+        should(emitter.initialized).eql(true);
       });
 
     emitter.initialize();

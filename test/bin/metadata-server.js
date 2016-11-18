@@ -26,7 +26,7 @@ const NOT_FOUND_BODY =
 
 function deepGet(root, path) {
   let twig = root,
-      result = null;
+    result = null;
 
   path.split('/').forEach((branch, index, branches) => {
     if (branch) {
@@ -40,6 +40,7 @@ function deepGet(root, path) {
       }
     }
   });
+
   return result;
 }
 
@@ -54,7 +55,7 @@ const server = HTTP.createServer((req, res) => {
   const slash = /\/$/.test(req.url);
   const item = deepGet(metadata, req.url.replace(/\/$/, ''));
   let code = STATUS_CODES.OK,
-      body = '';
+    body = '';
 
   if (typeof item === 'undefined') {
     return sendResponse(res, STATUS_CODES.NOT_FOUND, NOT_FOUND_BODY);
@@ -67,8 +68,9 @@ const server = HTTP.createServer((req, res) => {
   if (typeof item === 'object') {
     // if request has a trailing slash return the keys of the children, plus a trailing slash for child objects
     body = (slash) ? Object.keys(item)
-        .map((key) => key + (typeof item[key] === 'object' ? '/' : ''))
-        .join('\n') : body;
+      .map((key) => key + (typeof item[key] === 'object' ? '/' : ''))
+      .join('\n') : body;
+
     return sendResponse(res, code, body);
   }
 
