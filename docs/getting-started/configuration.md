@@ -27,7 +27,7 @@ specified in order for Tokend to run.
   "vault": {
     "host": "127.0.0.1",
     "port": 8200,
-    "token_ttl": "1m"
+    "token_ttl": 60
   },
   "warden": {
     "host": "127.0.0.1",
