@@ -3,7 +3,6 @@
 
 const should = require('should');
 const Provider = require('../lib/providers/provider');
-const Interface = require('../lib/utils/interface');
 const ImplementationError = require('../lib/errors').ImplementationError;
 
 class TestProvider extends Provider {
