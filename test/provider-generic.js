@@ -54,6 +54,26 @@ describe('Provider/Generic', function() {
     });
   });
 
+  describe('GenericProvider#invalidate', function() {
+    it('Clears the provider\'s data if #invalidate() is called', function() {
+      scope.get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, Object.assign({
+        data: {value: 'coolvalue'},
+        lease_duration: 2592000
+      }, resp));
+
+      const g = new GenericProvider('coolsecret', 'a-valid-token');
+
+      // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
+      // the right endpoint we need to provide the method name to read the secret endpoint.
+      g._method = 'read';
+
+      return g.initialize().then(() => {
+        g.invalidate();
+        should(g.data).be.null();
+      });
+    });
+  });
+
   it('can only be initialized once', function() {
     scope.get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, Object.assign({
       data: {value: 'coolvalue'},
