@@ -276,4 +276,36 @@ describe('Provider/Token', function() {
       });
     });
   });
+
+  describe('TokenProvider#invalidate', function() {
+    beforeEach(function() {
+      const setup = setUp();
+
+      AWS.MetadataService.prototype.request = setup.stub;
+      this.warden = setup.warden;
+      this.token = setup.token;
+    });
+
+    afterEach(function() {
+      this.token = null;
+      this.warden = null;
+      AWS.MetadataService.prototype.request = _MetadataService;
+    });
+    it('Clears the provider\'s data if #invalidate() is called', function() {
+      const resp = {
+        lease_duration: 300, // eslint-disable-line rapid7/static-magic-numbers
+        renewable: true,
+        client_token: 'somereallycooltoken',
+        policies: ['web', 'stage'],
+        metadata: {user: 'me!'}
+      };
+
+      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
+
+      return this.token.initialize().then(() => {
+        this.token.invalidate();
+        should(this.token.data).be.null();
+      });
+    });
+  });
 });
