@@ -2,7 +2,6 @@
 
 require('./init');
 require('should');
-const StorageService = require('../lib/storage-service');
 const HttpTestUtils = require('./utils/http');
 const testServerPort = 3000;
 
@@ -51,12 +50,13 @@ function makeServer(storage) {
   storage = (!storage) ? new StorageServiceMock() : storage;
 
   require('../lib/control/v1/index').attach(app, storage);
+
   return app.listen(testServerPort);
 }
 
-describe('v1 API', function () {
+describe('v1 API', function() {
   let server = null,
-      util = null;
+    util = null;
 
   beforeEach(() => {
     server = makeServer();
@@ -111,7 +111,7 @@ describe('v1 API', function () {
       });
     });
 
-    it('returns an error if the token cannot be retrieved', function (done) {
+    it('returns an error if the token cannot be retrieved', function(done) {
       server.close();
       server = makeServer(new StorageServiceMockWithError());
       util = new HttpTestUtils(server);
@@ -128,61 +128,66 @@ describe('v1 API', function () {
     });
   });
 
-  describe('/v1/secret/:token/:path endpoint', function() {
-    const endpoint = '/v1/secret/default/foo/bar';
+  [
+      {type: 'cubbyhole', endpoint: '/v1/cubbyhole/default/foo/bar'},
+      {type: 'secret', endpoint: '/v1/secret/default/foo/bar'}
+  ].forEach(function(el) {
+    describe(`/v1/${el.type}/:token/:path endpoint`, function() {
+      const endpoint = el.endpoint;
 
-    it('accepts GET requests', function(done) {
-      util.acceptGETRequest(endpoint).end(done);
-    });
-
-    it('rejects all other request types', function(done) {
-      util.rejectOtherRequests(endpoint).end(done);
-    });
-
-    it('returns a secret for the specified mount and role', function(done) {
-      server.close();
-      server = makeServer(new StorageServiceMockWithSecretResponse());
-      util = new HttpTestUtils(server);
-
-      util.testEndpointResponse(endpoint, (err, res) => {
-        res.body.should.eql({
-          username: 'bob',
-          password: 'my-awesome-password123'
-        });
-        done();
+      it('accepts GET requests', function(done) {
+        util.acceptGETRequest(endpoint).end(done);
       });
-    });
 
-    it('returns an error if the specified mount and role combination doesn\'t exist', function(done) {
-      server.close();
-      server = makeServer(new StorageServiceMockWithError());
-      util = new HttpTestUtils(server);
+      it('rejects all other request types', function(done) {
+        util.rejectOtherRequests(endpoint).end(done);
+      });
 
-      util.testEndpointResponse(endpoint, (err, res) => {
-        res.body.should.eql({
-          error: {
-            message: 'Funky looking error message',
-            name: 'Error'
-          }
+      it(`returns a ${el.type} secret for the specified mount and role`, function(done) {
+        server.close();
+        server = makeServer(new StorageServiceMockWithSecretResponse());
+        util = new HttpTestUtils(server);
+
+        util.testEndpointResponse(endpoint, (err, res) => {
+          res.body.should.eql({
+            username: 'bob',
+            password: 'my-awesome-password123'
+          });
+          done();
         });
-        done();
+      });
+
+      it('returns an error if the specified mount and role combination doesn\'t exist', function(done) {
+        server.close();
+        server = makeServer(new StorageServiceMockWithError());
+        util = new HttpTestUtils(server);
+
+        util.testEndpointResponse(endpoint, (err, res) => {
+          res.body.should.eql({
+            error: {
+              message: 'Funky looking error message',
+              name: 'Error'
+            }
+          });
+          done();
+        });
       });
     });
   });
 
-  describe('/v1/transit/default/decrypt endpoint', function () {
+  describe('/v1/transit/default/decrypt endpoint', function() {
     const endpoint = '/v1/transit/default/decrypt';
     const body = {key: 'KEY', ciphertext: 'CTEXT'};
 
-    it('accepts POST requests', function (done) {
+    it('accepts POST requests', function(done) {
       util.acceptPOSTRequest(endpoint, body).end(done);
     });
 
-    it('rejects non-POST requests', function () {
+    it('rejects non-POST requests', function() {
       return util.rejectNonPOSTRequests(endpoint, body);
     });
 
-    it('decodes Base64 encoded secrets', function (done) {
+    it('decodes Base64 encoded secrets', function(done) {
       server.close();
       server = makeServer(new StorageServiceMockWithTransitResponse());
       util = new HttpTestUtils(server);

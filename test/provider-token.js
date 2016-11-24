@@ -17,7 +17,7 @@ chai.use(require('chai-as-promised'));
 function setUp() {
   const stub = sinon.stub();
 
-  stub.onFirstCall().callsArgWith(1, null, JSON.stringify({doc: {foo: 'bar',baz: true}}))
+  stub.onFirstCall().callsArgWith(1, null, JSON.stringify({doc: {foo: 'bar', baz: true}}))
       .onSecondCall().callsArgWith(1, null, 'signature')
       .onThirdCall().callsArgWith(1, null, 'pkcs7 signature');
 
@@ -30,7 +30,7 @@ function setUp() {
     warden,
     token,
     stub
-  }
+  };
 }
 
 describe('Provider/Token', function() {
@@ -109,7 +109,7 @@ describe('Provider/Token', function() {
 
     it('Retrieves instance identity data from the EC2 Metadata Service', function() {
       const doc = JSON.stringify({
-        doc: {foo: 'bar',baz: true}
+        doc: {foo: 'bar', baz: true}
       });
 
       return this.token._getDocument().should.eventually.eql([doc, 'signature', 'pkcs7 signature']);
@@ -146,8 +146,6 @@ describe('Provider/Token', function() {
             token: resp.client_token
           }
         });
-      }).catch((err) => {
-        done(err);
       });
     });
 
@@ -206,6 +204,32 @@ describe('Provider/Token', function() {
         err.should.be.an.Error();
         err.message.should.equal(`${STATUS_CODES.BAD_REQUEST}: ${JSON.stringify(resp)}`);
       });
+    });
+
+    it('Returns previously retrieved data if initialize() is called again', function() {
+      const resp = {
+        lease_duration: 300, // eslint-disable-line rapid7/static-magic-numbers
+        renewable: true,
+        client_token: 'somereallycooltoken',
+        policies: ['web', 'stage'],
+        metadata: {user: 'me!'}
+      };
+      const expectedData = {
+        lease_id: resp.client_token,
+        lease_duration: resp.lease_duration,
+        data: {
+          token: resp.client_token
+        }
+      };
+
+      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
+
+      return this.token.initialize().then((data) => {
+        data.should.eql(expectedData);
+      }).then(() => this.token.initialize())
+        .then((data) => {
+          data.should.eql(expectedData);
+        });
     });
   });
 
@@ -275,6 +299,38 @@ describe('Provider/Token', function() {
         should(data).be.null();
       }).catch((err) => {
         err.should.be.an.Error();
+      });
+    });
+  });
+
+  describe('TokenProvider#invalidate', function() {
+    beforeEach(function() {
+      const setup = setUp();
+
+      AWS.MetadataService.prototype.request = setup.stub;
+      this.warden = setup.warden;
+      this.token = setup.token;
+    });
+
+    afterEach(function() {
+      this.token = null;
+      this.warden = null;
+      AWS.MetadataService.prototype.request = _MetadataService;
+    });
+    it('Clears the provider\'s data if #invalidate() is called', function() {
+      const resp = {
+        lease_duration: 300, // eslint-disable-line rapid7/static-magic-numbers
+        renewable: true,
+        client_token: 'somereallycooltoken',
+        policies: ['web', 'stage'],
+        metadata: {user: 'me!'}
+      };
+
+      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
+
+      return this.token.initialize().then(() => {
+        this.token.invalidate();
+        should(this.token.data).be.null();
       });
     });
   });
