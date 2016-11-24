@@ -128,44 +128,49 @@ describe('v1 API', function() {
     });
   });
 
-  describe('/v1/secret/:token/:path endpoint', function() {
-    const endpoint = '/v1/secret/default/foo/bar';
+  [
+      {type: 'cubbyhole', endpoint: '/v1/cubbyhole/default/foo/bar'},
+      {type: 'secret', endpoint: '/v1/secret/default/foo/bar'}
+  ].forEach(function(el) {
+    describe(`/v1/${el.type}/:token/:path endpoint`, function() {
+      const endpoint = el.endpoint;
 
-    it('accepts GET requests', function(done) {
-      util.acceptGETRequest(endpoint).end(done);
-    });
-
-    it('rejects all other request types', function(done) {
-      util.rejectOtherRequests(endpoint).end(done);
-    });
-
-    it('returns a secret for the specified mount and role', function(done) {
-      server.close();
-      server = makeServer(new StorageServiceMockWithSecretResponse());
-      util = new HttpTestUtils(server);
-
-      util.testEndpointResponse(endpoint, (err, res) => {
-        res.body.should.eql({
-          username: 'bob',
-          password: 'my-awesome-password123'
-        });
-        done();
+      it('accepts GET requests', function(done) {
+        util.acceptGETRequest(endpoint).end(done);
       });
-    });
 
-    it('returns an error if the specified mount and role combination doesn\'t exist', function(done) {
-      server.close();
-      server = makeServer(new StorageServiceMockWithError());
-      util = new HttpTestUtils(server);
+      it('rejects all other request types', function(done) {
+        util.rejectOtherRequests(endpoint).end(done);
+      });
 
-      util.testEndpointResponse(endpoint, (err, res) => {
-        res.body.should.eql({
-          error: {
-            message: 'Funky looking error message',
-            name: 'Error'
-          }
+      it(`returns a ${el.type} secret for the specified mount and role`, function(done) {
+        server.close();
+        server = makeServer(new StorageServiceMockWithSecretResponse());
+        util = new HttpTestUtils(server);
+
+        util.testEndpointResponse(endpoint, (err, res) => {
+          res.body.should.eql({
+            username: 'bob',
+            password: 'my-awesome-password123'
+          });
+          done();
         });
-        done();
+      });
+
+      it('returns an error if the specified mount and role combination doesn\'t exist', function(done) {
+        server.close();
+        server = makeServer(new StorageServiceMockWithError());
+        util = new HttpTestUtils(server);
+
+        util.testEndpointResponse(endpoint, (err, res) => {
+          res.body.should.eql({
+            error: {
+              message: 'Funky looking error message',
+              name: 'Error'
+            }
+          });
+          done();
+        });
       });
     });
   });
