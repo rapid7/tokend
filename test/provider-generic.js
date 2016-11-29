@@ -33,28 +33,28 @@ const resp = {
   warnings: null
 };
 
-describe('Provider/Generic', function () {
+describe('Provider/Generic', function() {
   let scope;
 
-  beforeEach(function () {
+  beforeEach(function() {
     scope = createHttpMock();
   });
 
-  afterEach(function () {
+  afterEach(function() {
     nock.removeInterceptor(scope);
   });
 
-  describe('GenericProvider#constructor', function () {
-    it('throws an IllegalValueError if the path is not provided in the constructor', function () {
+  describe('GenericProvider#constructor', function() {
+    it('throws an IllegalValueError if the path is not provided in the constructor', function() {
       (() => new GenericProvider('', 'totally-not-a-token')).should.throw(preconditions.IllegalValueError);
     });
 
-    it('throws an IllegalValueError if the token is not provided in the constructor', function () {
+    it('throws an IllegalValueError if the token is not provided in the constructor', function() {
       (() => new GenericProvider('path-to-secret', '')).should.throw(preconditions.IllegalValueError);
     });
   });
 
-  it('can only be initialized once', function () {
+  it('can only be initialized once', function() {
     scope.get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, Object.assign({
       data: {value: 'coolvalue'},
       lease_duration: 2592000
@@ -76,7 +76,7 @@ describe('Provider/Generic', function () {
   });
 
   describe('Valid secrets', function() {
-    it('executes the callback with the secret when initialized with a valid path and token', function () {
+    it('executes the callback with the secret when initialized with a valid path and token', function() {
       const expectedResponse = Object.assign({
         data: {value: 'coolvalue'},
         lease_duration: 2592000
@@ -93,7 +93,7 @@ describe('Provider/Generic', function () {
       return g.initialize().then((data) => data.should.eql(expectedResponse));
     });
 
-    it('attempts to re-read the secret when renewed', function () {
+    it('attempts to re-read the secret when renewed', function() {
       const expectedResponse = Object.assign({
         data: {value: 'coolvalue'},
         lease_duration: 2592000
@@ -114,23 +114,23 @@ describe('Provider/Generic', function () {
         .then((data) => data.should.eql(expectedResponse))
         .then(() => {
           g.renew().then((data) => {
-            data.should.eql(expectedResponse)
+            data.should.eql(expectedResponse);
           });
         });
     });
   });
 
-  describe('Invalid secrets', function () {
-    beforeEach(function () {
+  describe('Invalid secrets', function() {
+    beforeEach(function() {
       scope = createHttpMock();
       scope.get('/v1/secret/notasecret').reply(STATUS_CODES.NOT_FOUND, {errors: []});
     });
 
-    afterEach(function () {
+    afterEach(function() {
       nock.removeInterceptor(scope);
     });
 
-    it('executes the callback with an error if the path or token is invalid', function () {
+    it('executes the callback with an error if the path or token is invalid', function() {
       const g = new GenericProvider('notasecret', 'a-valid-token');
 
       // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit

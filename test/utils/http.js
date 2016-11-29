@@ -39,6 +39,7 @@ class HttpTestUtils {
   rejectOtherRequests(endpoint) {
     this.request(endpoint, 'POST', STATUS_CODES.METHOD_NOT_ALLOWED);
     this.request(endpoint, 'PUT', STATUS_CODES.METHOD_NOT_ALLOWED);
+
     return this.request(endpoint, 'DELETE', STATUS_CODES.METHOD_NOT_ALLOWED);
   }
 
@@ -49,7 +50,7 @@ class HttpTestUtils {
    * @returns {Promise}
    */
   rejectNonPOSTRequests(endpoint, body) {
-    const promises = ['GET', 'PUT', 'DELETE'].map((type) => {
+    const promises = ['GET', 'PUT', 'DELETE'].map((type) => { // eslint-disable-line arrow-body-style
       return new Promise((resolve, reject) => {
         this.request(endpoint, type, STATUS_CODES.METHOD_NOT_ALLOWED, body, 'POST').end((err, res) => {
           if (err) {
@@ -112,24 +113,23 @@ class HttpTestUtils {
     }
 
     switch (type) {
-      case 'GET':
-        r = r.get(endpoint);
-        break;
-      case 'POST':
-        r = r.post(endpoint).send(body);
-        break;
-      case 'DELETE':
-        r = r.del(endpoint);
-        break;
-      case 'PUT':
-        r = r.put(endpoint);
-        break;
-      case 'HEAD':
-        r = r.head(endpoint);
-        break;
-      default:
-        throw Error('invalid type supplied');
-        break;
+    case 'GET':
+      r = r.get(endpoint);
+      break;
+    case 'POST':
+      r = r.post(endpoint).send(body);
+      break;
+    case 'DELETE':
+      r = r.del(endpoint);
+      break;
+    case 'PUT':
+      r = r.put(endpoint);
+      break;
+    case 'HEAD':
+      r = r.head(endpoint);
+      break;
+    default:
+      throw Error('invalid type supplied');
     }
 
     r = (code === STATUS_CODES.OK || code === STATUS_CODES.BAD_REQUEST) ? r.expect('Content-Type', 'application/json; charset=utf-8') : r;
@@ -137,7 +137,7 @@ class HttpTestUtils {
 
     return r
       .set('Accept', 'application/json')
-      .expect(code)
+      .expect(code);
   }
 }
 

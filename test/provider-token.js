@@ -17,7 +17,7 @@ chai.use(require('chai-as-promised'));
 function setUp() {
   const stub = sinon.stub();
 
-  stub.onFirstCall().callsArgWith(1, null, JSON.stringify({doc: {foo: 'bar',baz: true}}))
+  stub.onFirstCall().callsArgWith(1, null, JSON.stringify({doc: {foo: 'bar', baz: true}}))
       .onSecondCall().callsArgWith(1, null, 'signature')
       .onThirdCall().callsArgWith(1, null, 'pkcs7 signature');
 
@@ -30,7 +30,7 @@ function setUp() {
     warden,
     token,
     stub
-  }
+  };
 }
 
 describe('Provider/Token', function() {
@@ -109,7 +109,7 @@ describe('Provider/Token', function() {
 
     it('Retrieves instance identity data from the EC2 Metadata Service', function() {
       const doc = JSON.stringify({
-        doc: {foo: 'bar',baz: true}
+        doc: {foo: 'bar', baz: true}
       });
 
       return this.token._getDocument().should.eventually.eql([doc, 'signature', 'pkcs7 signature']);
@@ -146,8 +146,6 @@ describe('Provider/Token', function() {
             token: resp.client_token
           }
         });
-      }).catch((err) => {
-        done(err);
       });
     });
 

@@ -54,13 +54,13 @@ router.route('/').post((req, res) => {
 router.route('/mounts').get((req, res) => {
   vault.getMounts()
     .then((mounts) => res.json(mounts))
-    .catch((err) => res.status(err.statusCode).json(err.error))
+    .catch((err) => res.status(err.statusCode).json(err.error));
 });
 
 router.route('/auths').get((req, res) => {
   vault.getAuthMounts()
     .then((authMounts) => res.json(authMounts))
-    .catch((err) => res.status(err.statusCode).json(err.error))
+    .catch((err) => res.status(err.statusCode).json(err.error));
 });
 
 router.route('/secret/:id').get((req, res) => {
