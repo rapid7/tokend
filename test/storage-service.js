@@ -92,7 +92,6 @@ class DelayedInitializeProvider {
     return new Promise((resolve, reject) => {
       setTimeout(() => resolve({data: 'SECRET'}), this.delay);
     });
-
   }
 
   renew() {
@@ -138,13 +137,13 @@ function setTokenProvider(storage, provider) {
 
   storage._managers.set('/TokenProvider/default/default', l);
   storage.defaultToken = l;
+
   return storage;
 }
 
 describe('StorageService', function() {
-
-  describe('StorageService#constructor', function () {
-    it('should have a default LeaseManager', function () {
+  describe('StorageService#constructor', function() {
+    it('should have a default LeaseManager', function() {
       const storage = new StorageService();
       const t = storage.defaultToken;
 
@@ -155,20 +154,20 @@ describe('StorageService', function() {
     });
   });
 
-  describe('StorageService#lookup', function () {
-    it('should lookup the secret from a ready LeaseManager', function () {
+  describe('StorageService#lookup', function() {
+    it('should lookup the secret from a ready LeaseManager', function() {
       const manager = new LeaseManager(new ImmediateInitializeProvider());
       const storage = setTokenProvider(new StorageService());
 
       storage._managers.set('/ImmediateInitializeProvider/default/test', manager);
-      return manager.initialize().then(() => {
-        return storage.lookup('default', 'test', ImmediateInitializeProvider).then((data) => {
+
+      return manager.initialize().then(() => storage.lookup('default', 'test', ImmediateInitializeProvider)
+        .then((data) => {
           should(data).eql('SECRET');
-        });
-      });
+        }));
     });
 
-    it('should lookup secret if LeaseManager becomes ready before timeout', function () {
+    it('should lookup secret if LeaseManager becomes ready before timeout', function() {
       const secret = 'test';
       const provider = new DelayedInitializeProvider(1000);
       const manager = new LeaseManager(provider);
@@ -183,7 +182,7 @@ describe('StorageService', function() {
       });
     });
 
-    it('should timeout lookup calls if LeaseManager is not ready', function () {
+    it('should timeout lookup calls if LeaseManager is not ready', function() {
       const storage = setTokenProvider(new StorageService({timeout: 500}));
 
       return storage.lookup('default', 'secret', NeverInitializeProvider).catch((err) => {
@@ -192,7 +191,7 @@ describe('StorageService', function() {
       });
     });
 
-    it('should call the same callback multiple times if provided more than once when manager is ready', function (done) {
+    it('should call the same callback multiple times if provided more than once when manager is ready', function(done) {
       const secret = 'test';
       const provider = new ImmediateInitializeProvider();
       const manager = new LeaseManager(provider);
@@ -203,7 +202,7 @@ describe('StorageService', function() {
         should(data).eql('SECRET');
 
         numTimesToBeCalled--;
-        if (numTimesToBeCalled == 0) {
+        if (numTimesToBeCalled === 0) {
           done();
         }
       };
@@ -216,7 +215,7 @@ describe('StorageService', function() {
       });
     });
 
-    it('should call the same callback multiple times if provided more than once when manager becomes ready', function (done) {
+    it('should call the same callback multiple times if provided more than once when manager becomes ready', function(done) {
       const secret = 'test';
       const storage = setTokenProvider(new StorageService({timeout: 2000}));
 
@@ -225,7 +224,7 @@ describe('StorageService', function() {
         should(data).eql('SECRET');
 
         numTimesToBeCalled--;
-        if (numTimesToBeCalled == 0) {
+        if (numTimesToBeCalled === 0) {
           done();
         }
       };
@@ -244,7 +243,7 @@ describe('StorageService', function() {
       });
     });
 
-    it('should wait until the requested token is ready before initialize the provider', function () {
+    it('should wait until the requested token is ready before initialize the provider', function() {
       const storage = setTokenProvider(new StorageService());
 
       return storage.lookup('default', 'somesecret', MockSecretProvider).then(() => {
@@ -254,15 +253,14 @@ describe('StorageService', function() {
       });
     });
 
-    it('should only provision one TokenProvider', function () {
+    it('should only provision one TokenProvider', function() {
       const spy = sinon.spy(DelayedMockTokenProvider.prototype, 'initialize');
       const storage = setTokenProvider(new StorageService(), new DelayedMockTokenProvider());
 
       return storage.lookup('default', 'somesecret', MockSecretProvider).then(() => spy.calledOnce.should.be.true);
-
     });
 
-    it('should remove a Provider from StorageService#_mangers if it raises an error', function () {
+    it('should remove a Provider from StorageService#_mangers if it raises an error', function() {
       const storage = setTokenProvider(new StorageService());
 
       return storage.lookup('default', 'somesecret', NeverInitializeProvider).catch(() => {
@@ -271,7 +269,7 @@ describe('StorageService', function() {
       });
     });
 
-    it('should not cache managers for non-renewable secrets that are immediate', function () {
+    it('should not cache managers for non-renewable secrets that are immediate', function() {
       const storage = setTokenProvider(new StorageService());
 
       return storage.lookup('default', {key: 'KEY', ciphertext: 'CTEXT'}, NonRenewingProvider)
@@ -281,7 +279,7 @@ describe('StorageService', function() {
       });
     });
 
-    it('should not cache managers for non-renewable secrets that are delayed', function () {
+    it('should not cache managers for non-renewable secrets that are delayed', function() {
       const storage = setTokenProvider(new StorageService());
 
       return storage.lookup('default', {key: 'KEY', ciphertext: 'CTEXT'}, DelayedNonRenewingProvider)

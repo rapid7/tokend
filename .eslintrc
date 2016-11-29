@@ -1,10 +1,11 @@
 {
-  "extends": "rapid7/base",
+  "extends": "rapid7/node",
    "globals": {
     "Config": true,
     "Log": true
   },
-  "env": {
-    "node": true
+  "rules": {
+    "strict": [0],
+    "arrow-body-style": [2, "as-needed"]
   }
 }
