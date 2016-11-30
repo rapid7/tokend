@@ -303,6 +303,7 @@ describe('Provider/Token', function() {
       nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
 
       return this.token.initialize().then(() => {
+        should(this.token.data).not.be.null();
         this.token.invalidate();
         should(this.token.data).be.null();
       });

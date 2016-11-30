@@ -68,6 +68,7 @@ describe('Provider/Generic', function() {
       g._method = 'read';
 
       return g.initialize().then(() => {
+        should(g.data).not.be.null();
         g.invalidate();
         should(g.data).be.null();
       });
