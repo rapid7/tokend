@@ -285,10 +285,11 @@ describe('Provider/Token', function() {
         .reply(STATUS_CODES.BAD_REQUEST, {errors: ['This token cannot be renewed']});
       this.token.token = 'somereallycooltoken';
 
-      this.token.renew().then((data) => {
+      return this.token.renew().then((data) => {
         should(data).be.null();
       }).catch((err) => {
         err.should.be.an.Error();
+        err.name.should.equal('StatusCodeError');
       });
     });
 
@@ -299,6 +300,26 @@ describe('Provider/Token', function() {
         should(data).be.null();
       }).catch((err) => {
         err.should.be.an.Error();
+      });
+    });
+
+    it('Return existing data if it receives an error that is not a StatusCodeError', function() {
+      const token = 'somereallycooltoken';
+      const resp = this.token.data = {
+        lease_id: token,
+        lease_duration: 300,
+        data: {
+          token
+        }
+      };
+
+      scope.post('/v1/auth/token/renew/somereallycooltoken').replyWithError('');
+      this.token.token = token;
+      this.token.data = resp;
+
+      return this.token.renew().then((data) => {
+        should(data).not.be.null();
+        data.should.equal(resp);
       });
     });
   });
