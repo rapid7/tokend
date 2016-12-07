@@ -1,4 +1,3 @@
-/* global Config */
 'use strict';
 
 const CubbyHoleProvider = require('../lib/providers/cubbyhole');

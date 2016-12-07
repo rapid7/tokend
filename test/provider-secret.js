@@ -1,4 +1,3 @@
-/* global Config */
 'use strict';
 
 const SecretProvider = require('../lib/providers/secret');
