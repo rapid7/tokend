@@ -9,7 +9,7 @@ const defaults = Object.assign(require('../config/defaults.json'), {
     host: '127.0.0.1',
     port: 8200,
     tls: true,
-    token_ttl: '1m'
+    token_ttl: 60
   },
   warden: {
     host: '127.0.0.1',

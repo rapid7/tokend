@@ -205,6 +205,32 @@ describe('Provider/Token', function() {
         err.message.should.equal(`${STATUS_CODES.BAD_REQUEST}: ${JSON.stringify(resp)}`);
       });
     });
+
+    it('Returns previously retrieved data if initialize() is called again', function() {
+      const resp = {
+        lease_duration: 300, // eslint-disable-line rapid7/static-magic-numbers
+        renewable: true,
+        client_token: 'somereallycooltoken',
+        policies: ['web', 'stage'],
+        metadata: {user: 'me!'}
+      };
+      const expectedData = {
+        lease_id: resp.client_token,
+        lease_duration: resp.lease_duration,
+        data: {
+          token: resp.client_token
+        }
+      };
+
+      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
+
+      return this.token.initialize().then((data) => {
+        data.should.eql(expectedData);
+      }).then(() => this.token.initialize())
+        .then((data) => {
+          data.should.eql(expectedData);
+        });
+    });
   });
 
   describe('TokenProvider#renew', function() {
@@ -259,10 +285,11 @@ describe('Provider/Token', function() {
         .reply(STATUS_CODES.BAD_REQUEST, {errors: ['This token cannot be renewed']});
       this.token.token = 'somereallycooltoken';
 
-      this.token.renew().then((data) => {
+      return this.token.renew().then((data) => {
         should(data).be.null();
       }).catch((err) => {
         err.should.be.an.Error();
+        err.name.should.equal('StatusCodeError');
       });
     });
 
@@ -273,6 +300,59 @@ describe('Provider/Token', function() {
         should(data).be.null();
       }).catch((err) => {
         err.should.be.an.Error();
+      });
+    });
+
+    it('Return existing data if it receives an error that is not a StatusCodeError', function() {
+      const token = 'somereallycooltoken';
+      const resp = this.token.data = {
+        lease_id: token,
+        lease_duration: 300,
+        data: {
+          token
+        }
+      };
+
+      scope.post('/v1/auth/token/renew/somereallycooltoken').replyWithError('');
+      this.token.token = token;
+      this.token.data = resp;
+
+      return this.token.renew().then((data) => {
+        should(data).not.be.null();
+        data.should.equal(resp);
+      });
+    });
+  });
+
+  describe('TokenProvider#invalidate', function() {
+    beforeEach(function() {
+      const setup = setUp();
+
+      AWS.MetadataService.prototype.request = setup.stub;
+      this.warden = setup.warden;
+      this.token = setup.token;
+    });
+
+    afterEach(function() {
+      this.token = null;
+      this.warden = null;
+      AWS.MetadataService.prototype.request = _MetadataService;
+    });
+    it('Clears the provider\'s data if #invalidate() is called', function() {
+      const resp = {
+        lease_duration: 300, // eslint-disable-line rapid7/static-magic-numbers
+        renewable: true,
+        client_token: 'somereallycooltoken',
+        policies: ['web', 'stage'],
+        metadata: {user: 'me!'}
+      };
+
+      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
+
+      return this.token.initialize().then(() => {
+        should(this.token.data).not.be.null();
+        this.token.invalidate();
+        should(this.token.data).be.null();
       });
     });
   });

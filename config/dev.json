@@ -3,7 +3,7 @@
     "host": "127.0.0.1",
     "port": 8200,
     "tls": false,
-    "token_ttl": "1m"
+    "token_ttl": 60
   },
   "metadata": {
     "host": "127.0.0.1:8900"
