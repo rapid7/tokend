@@ -73,7 +73,7 @@ describe('v1 API', function() {
   });
 
   it(`returns a ${STATUS_CODES.BAD_REQUEST} if 'Content-Type: application/json' is not specified`, function(done) {
-    util.testEndpointResponse('/v1/health', 'GET', STATUS_CODES.BAD_REQUEST, {}, {}, (err, res) => {
+    util.testEndpointResponse('/v1/transit/default/decrypt', 'POST', STATUS_CODES.BAD_REQUEST, JSON.stringify({}), {}, (err, res) => {
       res.statusCode.should.equal(STATUS_CODES.BAD_REQUEST);
       res.body.should.have.property('error');
       res.body.error.should.have.property('name');
