@@ -49,7 +49,7 @@ end
 
 ## Fetch and install tokend
 remote_file 'tokend' do
-  source tokend::Helpers.github_download('rapid7', 'tokend', node['tokend']['version'])
+  source Tokend::Helpers.github_download('rapid7', 'tokend', node['tokend']['version'])
   path ::File.join(Chef::Config['file_cache_path'], "tokend-#{node['tokend']['version']}.deb")
 
   action :create_if_missing
