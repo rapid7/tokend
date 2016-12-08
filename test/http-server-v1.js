@@ -3,6 +3,7 @@
 require('./init');
 require('should');
 const HttpTestUtils = require('./utils/http');
+const STATUS_CODES = require('../lib/control/util/status-codes');
 const testServerPort = 3000;
 
 class MockProvider {
@@ -71,16 +72,16 @@ describe('v1 API', function() {
   describe('/v1/health endpoint', function() {
     const endpoint = '/v1/health';
 
-    it('accepts GET requests', function(done) {
-      util.acceptGETRequest(endpoint).end(done);
+    it('accepts GET requests', function() {
+      return util.acceptRequest(endpoint, 'GET', {}, {});
     });
 
-    it('rejects all other request types', function(done) {
-      util.rejectOtherRequests(endpoint).end(done);
+    it('rejects all other request types', function() {
+      return util.rejectOtherRequests(endpoint, ['POST', 'PUT', 'DELETE'], {}, {}, 'GET');
     });
 
     it('returns the service health', function(done) {
-      util.testEndpointResponse(endpoint, (err, res) => {
+      util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, {}, (err, res) => {
         res.body.should.have.property('uptime');
         res.body.should.have.property('status');
         res.body.should.have.property('version');
@@ -92,12 +93,12 @@ describe('v1 API', function() {
   describe('/v1/token/default endpoint', function() {
     const endpoint = '/v1/token/default';
 
-    it('accepts GET requests', function(done) {
-      util.acceptGETRequest(endpoint).end(done);
+    it('accepts GET requests', function() {
+      return util.acceptRequest(endpoint, 'GET', {}, {});
     });
 
-    it('rejects all other request types', function(done) {
-      util.rejectOtherRequests(endpoint).end(done);
+    it('rejects all other request types', function() {
+      return util.rejectOtherRequests(endpoint, ['POST', 'PUT', 'DELETE'], {}, {}, 'GET');
     });
 
     it('returns the initial token', function(done) {
@@ -105,7 +106,7 @@ describe('v1 API', function() {
       server = makeServer(new StorageServiceMockWithTokenResponse());
       util = new HttpTestUtils(server);
 
-      util.testEndpointResponse(endpoint, (err, res) => {
+      util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, {}, (err, res) => {
         res.body.should.eql('token');
         done();
       });
@@ -116,7 +117,7 @@ describe('v1 API', function() {
       server = makeServer(new StorageServiceMockWithError());
       util = new HttpTestUtils(server);
 
-      util.testEndpointResponse(endpoint, (err, res) => {
+      util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, {}, (err, res) => {
         res.body.should.eql({
           error: {
             message: 'Funky looking error message',
@@ -135,12 +136,12 @@ describe('v1 API', function() {
     describe(`/v1/${el.type}/:token/:path endpoint`, function() {
       const endpoint = el.endpoint;
 
-      it('accepts GET requests', function(done) {
-        util.acceptGETRequest(endpoint).end(done);
+      it('accepts GET requests', function() {
+        return util.acceptRequest(endpoint, 'GET', {}, {});
       });
 
-      it('rejects all other request types', function(done) {
-        util.rejectOtherRequests(endpoint).end(done);
+      it('rejects all other request types', function() {
+        return util.rejectOtherRequests(endpoint, ['POST', 'PUT', 'DELETE'], {}, {}, 'GET');
       });
 
       it(`returns a ${el.type} secret for the specified mount and role`, function(done) {
@@ -148,7 +149,7 @@ describe('v1 API', function() {
         server = makeServer(new StorageServiceMockWithSecretResponse());
         util = new HttpTestUtils(server);
 
-        util.testEndpointResponse(endpoint, (err, res) => {
+        util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, {}, (err, res) => {
           res.body.should.eql({
             username: 'bob',
             password: 'my-awesome-password123'
@@ -162,7 +163,7 @@ describe('v1 API', function() {
         server = makeServer(new StorageServiceMockWithError());
         util = new HttpTestUtils(server);
 
-        util.testEndpointResponse(endpoint, (err, res) => {
+        util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, {}, (err, res) => {
           res.body.should.eql({
             error: {
               message: 'Funky looking error message',
@@ -179,12 +180,12 @@ describe('v1 API', function() {
     const endpoint = '/v1/transit/default/decrypt';
     const body = {key: 'KEY', ciphertext: 'CTEXT'};
 
-    it('accepts POST requests', function(done) {
-      util.acceptPOSTRequest(endpoint, body).end(done);
+    it('accepts POST requests', function() {
+      return util.acceptRequest(endpoint, 'POST', JSON.stringify(body), {});
     });
 
     it('rejects non-POST requests', function() {
-      return util.rejectNonPOSTRequests(endpoint, body);
+      return util.rejectOtherRequests(endpoint, ['GET', 'PUT', 'DELETE'], JSON.stringify(body), {}, 'POST');
     });
 
     it('decodes Base64 encoded secrets', function(done) {
@@ -192,7 +193,7 @@ describe('v1 API', function() {
       server = makeServer(new StorageServiceMockWithTransitResponse());
       util = new HttpTestUtils(server);
 
-      util.testEndpointPOSTResponse(endpoint, body, (err, res) => {
+      util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.OK, JSON.stringify(body), {}, (err, res) => {
         res.body.should.eql({
           plaintext: 'PTEXT'
         });
@@ -206,7 +207,7 @@ describe('v1 API', function() {
       server = makeServer(new StorageServiceMockWithError());
       util = new HttpTestUtils(server);
 
-      util.testBadEndpointPOSTResponse(endpoint, body, (err, res) => {
+      util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.BAD_REQUEST, JSON.stringify(body), {}, (err, res) => {
         if (err) {
           return done(err);
         }
