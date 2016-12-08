@@ -14,14 +14,21 @@ const goodDefaultToken = () => Promise.resolve({
   }
 });
 
+const badDefaultToken = () => Promise.reject(new TypeError('Invalid token.'));
+
+const badDataDefaultToken = () => Promise.resolve({
+  status: STATUS.PENDING,
+  data: {}
+});
+
 class MockProvider {
   constructor() {}
 }
 
 class StorageServiceMock {
-  constructor() {
+  constructor(token) {
     this.defaultToken = {
-      initialize: goodDefaultToken
+      initialize: token
     };
   }
 
@@ -62,7 +69,7 @@ class StorageServiceMockWithError {
 function makeServer(storage) {
   const app = require('express')();
 
-  storage = (!storage) ? new StorageServiceMock() : storage;
+  storage = (!storage) ? new StorageServiceMock(goodDefaultToken) : storage;
 
   require('../lib/control/v1/index').attach(app, storage);
 
@@ -115,6 +122,40 @@ describe('v1 API', function() {
         res.body.should.have.property('status');
         res.body.should.have.property('version');
         res.body.should.have.property('code');
+        done();
+      });
+    });
+
+    it('returns an error if an error is throw retrieving the default token ', function(done) {
+      server.close();
+      server = makeServer(new StorageServiceMock(badDefaultToken));
+      util = new HttpTestUtils(server);
+
+      util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.SERVICE_UNAVAILABLE, {}, {}, (err, res) => {
+        res.body.should.have.property('uptime');
+        res.body.should.have.property('status');
+        res.body.should.have.property('version');
+        res.body.should.have.property('code');
+
+        res.body.status.should.equal('Invalid token.');
+        res.body.code.should.equal(STATUS_CODES.SERVICE_UNAVAILABLE);
+        done();
+      });
+    });
+
+    it('returns an error if the default token is retrieved but the data from Vault is somehow bad', function(done) {
+      server.close();
+      server = makeServer(new StorageServiceMock(badDataDefaultToken));
+      util = new HttpTestUtils(server);
+
+      util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.SERVICE_UNAVAILABLE, {}, {}, (err, res) => {
+        res.body.should.have.property('uptime');
+        res.body.should.have.property('status');
+        res.body.should.have.property('version');
+        res.body.should.have.property('code');
+
+        res.body.status.should.equal('Manager is not ready.');
+        res.body.code.should.equal('MANAGERNOTREADY');
         done();
       });
     });
