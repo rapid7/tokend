@@ -13,46 +13,30 @@ class HttpTestUtils {
   }
 
   /**
-   * Accept GET requests
-   * @param {string} endpoint
-   * @returns {Test}
+   * Accepts a request
+   * @param {String} endpoint - Endpoint to request
+   * @param {String} method - Request method
+   * @param {Object} body - Request body
+   * @param {Object} headers - Request headers
+   * @return {Test}
    */
-  acceptGETRequest(endpoint) {
-    return this.request(endpoint, 'GET', STATUS_CODES.OK);
-  }
-
-  /**
-   * Accept POST requests
-   * @param {String} endpoint
-   * @param {Object} body
-   * @returns {Test}
-   */
-  acceptPOSTRequest(endpoint, body) {
-    return this.request(endpoint, 'POST', STATUS_CODES.OK, body);
+  acceptRequest(endpoint, method, body, headers) {
+    return this.request(endpoint, method, STATUS_CODES.OK, body, headers);
   }
 
   /**
    * Reject any other request type
-   * @param {string} endpoint
-   * @returns {Test}
-   */
-  rejectOtherRequests(endpoint) {
-    this.request(endpoint, 'POST', STATUS_CODES.METHOD_NOT_ALLOWED);
-    this.request(endpoint, 'PUT', STATUS_CODES.METHOD_NOT_ALLOWED);
-
-    return this.request(endpoint, 'DELETE', STATUS_CODES.METHOD_NOT_ALLOWED);
-  }
-
-  /**
-   * Test that all non-POST requests are rejected
-   * @param {String} endpoint - Endpoint for the request
-   * @param {Object} body - Body to send with the request
+   * @param {String} endpoint - Endpoint to request
+   * @param {Array} methods - Methods to test
+   * @param {Object} body - Request body
+   * @param {Object} headers - Request headers
+   * @param {String} allowedMethod - Allowed request method
    * @returns {Promise}
    */
-  rejectNonPOSTRequests(endpoint, body) {
-    const promises = ['GET', 'PUT', 'DELETE'].map((type) => { // eslint-disable-line arrow-body-style
+  rejectOtherRequests(endpoint, methods, body, headers, allowedMethod) {
+    const promises = methods.map((type) => { // eslint-disable-line arrow-body-style
       return new Promise((resolve, reject) => {
-        this.request(endpoint, type, STATUS_CODES.METHOD_NOT_ALLOWED, body, 'POST').end((err, res) => {
+        this.request(endpoint, type, STATUS_CODES.METHOD_NOT_ALLOWED, body, headers, allowedMethod).end((err, res) => {
           if (err) {
             return reject(err);
           }
@@ -66,53 +50,36 @@ class HttpTestUtils {
 
   /**
    * Execute a callback against a supertest request
-   * @param {string} endpoint
+   * @param {String} endpoint
+   * @param {String} method
+   * @param {Number} expected
+   * @param {Object} body
+   * @param {Object} headers
    * @param {function} callback
    * @returns {Test}
    */
-  testEndpointResponse(endpoint, callback) {
-    return this.request(endpoint, 'GET', STATUS_CODES.OK).end(callback);
-  }
-
-  /**
-   * Execute a callback against a supertest POST request
-   * @param {String} endpoint - The endpoint to request
-   * @param {String} body - The body to POST
-   * @param {Function} callback - called with (err, res) when the request completes
-   * @returns {Test}
-   */
-  testEndpointPOSTResponse(endpoint, body, callback) {
-    return this.request(endpoint, 'POST', STATUS_CODES.OK, body).end(callback);
-  }
-
-  /**
-   * Execute a callback against a bad supertest POST request
-   * @param {String} endpoint - The endpoint to request
-   * @param {String} body - The body to POST
-   * @param {Function} callback - called with (err, res) when the request completes
-   * @returns {Test}
-   */
-  testBadEndpointPOSTResponse(endpoint, body, callback) {
-    return this.request(endpoint, 'POST', STATUS_CODES.BAD_REQUEST, body).end(callback);
+  testEndpointResponse(endpoint, method, expected, body, headers, callback) {
+    return this.request(endpoint, method, expected, body, headers).end(callback);
   }
 
   /**
    * Create the supertest Test
    * @param {string} endpoint
-   * @param {string} type
+   * @param {string} method
    * @param {number} code
    * @param {object} [body]
+   * @param {object} [headers]
    * @param {string} [allowedType]
    * @returns {Test}
    */
-  request(endpoint, type, code, body, allowedType) {
+  request(endpoint, method, code, body, headers, allowedType) {
     let r = request(this.server);
 
-    if (!allowedType) {
-      allowedType = 'GET';
-    }
+    headers = headers || {};
+    body = body || {};
+    allowedType = allowedType || 'GET';
 
-    switch (type) {
+    switch (method) {
     case 'GET':
       r = r.get(endpoint);
       break;
@@ -132,8 +99,17 @@ class HttpTestUtils {
       throw Error('invalid type supplied');
     }
 
-    r = (code === STATUS_CODES.OK || code === STATUS_CODES.BAD_REQUEST) ? r.expect('Content-Type', 'application/json; charset=utf-8') : r;
-    r = (code === STATUS_CODES.METHOD_NOT_ALLOWED) ? r.expect('Allow', allowedType) : r;
+    for (const h in headers) {
+      r = r.set(h, headers[h]);
+    }
+
+    if (code === STATUS_CODES.METHOD_NOT_ALLOWED) {
+      r = r.expect('Allow', allowedType);
+    }
+
+    if (code === STATUS_CODES.OK || code === STATUS_CODES.BAD_REQUEST) {
+      r = r.expect('Content-Type', /json/);
+    }
 
     return r
       .set('Accept', 'application/json')
