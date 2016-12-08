@@ -88,7 +88,7 @@ describe('v1 API', function() {
     const endpoint = '/v1/health';
 
     it('accepts GET requests', function() {
-      return util.acceptRequest(endpoint, 'GET', {}, requiredHeaders);
+      return util.acceptRequest(endpoint, 'GET', {}, {});
     });
 
     it('rejects all other request types', function() {
@@ -96,7 +96,7 @@ describe('v1 API', function() {
     });
 
     it('returns the service health', function(done) {
-      util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, requiredHeaders, (err, res) => {
+      util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, {}, (err, res) => {
         res.body.should.have.property('uptime');
         res.body.should.have.property('status');
         res.body.should.have.property('version');
@@ -109,7 +109,7 @@ describe('v1 API', function() {
     const endpoint = '/v1/token/default';
 
     it('accepts GET requests', function() {
-      return util.acceptRequest(endpoint, 'GET', {}, requiredHeaders);
+      return util.acceptRequest(endpoint, 'GET', {}, {});
     });
 
     it('rejects all other request types', function() {
@@ -121,7 +121,7 @@ describe('v1 API', function() {
       server = makeServer(new StorageServiceMockWithTokenResponse());
       util = new HttpTestUtils(server);
 
-      util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, requiredHeaders, (err, res) => {
+      util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, {}, (err, res) => {
         res.body.should.eql('token');
         done();
       });
@@ -132,7 +132,7 @@ describe('v1 API', function() {
       server = makeServer(new StorageServiceMockWithError());
       util = new HttpTestUtils(server);
 
-      util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, requiredHeaders, (err, res) => {
+      util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, {}, (err, res) => {
         res.body.should.eql({
           error: {
             message: 'Funky looking error message',
@@ -152,7 +152,7 @@ describe('v1 API', function() {
       const endpoint = el.endpoint;
 
       it('accepts GET requests', function() {
-        return util.acceptRequest(endpoint, 'GET', {}, requiredHeaders);
+        return util.acceptRequest(endpoint, 'GET', {}, {});
       });
 
       it('rejects all other request types', function() {
@@ -164,7 +164,7 @@ describe('v1 API', function() {
         server = makeServer(new StorageServiceMockWithSecretResponse());
         util = new HttpTestUtils(server);
 
-        util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, requiredHeaders, (err, res) => {
+        util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, {}, (err, res) => {
           res.body.should.eql({
             username: 'bob',
             password: 'my-awesome-password123'
@@ -178,7 +178,7 @@ describe('v1 API', function() {
         server = makeServer(new StorageServiceMockWithError());
         util = new HttpTestUtils(server);
 
-        util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, requiredHeaders, (err, res) => {
+        util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.OK, {}, {}, (err, res) => {
           res.body.should.eql({
             error: {
               message: 'Funky looking error message',
