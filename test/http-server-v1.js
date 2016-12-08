@@ -56,6 +56,9 @@ function makeServer(storage) {
 }
 
 describe('v1 API', function() {
+  const requiredHeaders = {
+    'Content-Type': 'application/json; charset=utf-8'
+  };
   let server = null,
     util = null;
 
@@ -69,6 +72,18 @@ describe('v1 API', function() {
     util = null;
   });
 
+  it(`returns a ${STATUS_CODES.BAD_REQUEST} if 'Content-Type: application/json' is not specified`, function(done) {
+    util.testEndpointResponse('/v1/transit/default/decrypt', 'POST', STATUS_CODES.BAD_REQUEST, JSON.stringify({}), {}, (err, res) => {
+      res.statusCode.should.equal(STATUS_CODES.BAD_REQUEST);
+      res.body.should.have.property('error');
+      res.body.error.should.have.property('name');
+      res.body.error.should.have.property('message');
+      res.body.error.name.should.equal('TypeError');
+      res.body.error.message.should.equal('Content-Type must be `application/json; charset=utf-8`.');
+      done();
+    });
+  });
+
   describe('/v1/health endpoint', function() {
     const endpoint = '/v1/health';
 
@@ -77,7 +92,7 @@ describe('v1 API', function() {
     });
 
     it('rejects all other request types', function() {
-      return util.rejectOtherRequests(endpoint, ['POST', 'PUT', 'DELETE'], {}, {}, 'GET');
+      return util.rejectOtherRequests(endpoint, ['POST', 'PUT', 'DELETE'], {}, requiredHeaders, 'GET');
     });
 
     it('returns the service health', function(done) {
@@ -98,7 +113,7 @@ describe('v1 API', function() {
     });
 
     it('rejects all other request types', function() {
-      return util.rejectOtherRequests(endpoint, ['POST', 'PUT', 'DELETE'], {}, {}, 'GET');
+      return util.rejectOtherRequests(endpoint, ['POST', 'PUT', 'DELETE'], {}, requiredHeaders, 'GET');
     });
 
     it('returns the initial token', function(done) {
@@ -141,7 +156,7 @@ describe('v1 API', function() {
       });
 
       it('rejects all other request types', function() {
-        return util.rejectOtherRequests(endpoint, ['POST', 'PUT', 'DELETE'], {}, {}, 'GET');
+        return util.rejectOtherRequests(endpoint, ['POST', 'PUT', 'DELETE'], {}, requiredHeaders, 'GET');
       });
 
       it(`returns a ${el.type} secret for the specified mount and role`, function(done) {
@@ -181,11 +196,11 @@ describe('v1 API', function() {
     const body = {key: 'KEY', ciphertext: 'CTEXT'};
 
     it('accepts POST requests', function() {
-      return util.acceptRequest(endpoint, 'POST', JSON.stringify(body), {});
+      return util.acceptRequest(endpoint, 'POST', JSON.stringify(body), requiredHeaders);
     });
 
     it('rejects non-POST requests', function() {
-      return util.rejectOtherRequests(endpoint, ['GET', 'PUT', 'DELETE'], JSON.stringify(body), {}, 'POST');
+      return util.rejectOtherRequests(endpoint, ['GET', 'PUT', 'DELETE'], JSON.stringify(body), requiredHeaders, 'POST');
     });
 
     it('decodes Base64 encoded secrets', function(done) {
@@ -193,7 +208,7 @@ describe('v1 API', function() {
       server = makeServer(new StorageServiceMockWithTransitResponse());
       util = new HttpTestUtils(server);
 
-      util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.OK, JSON.stringify(body), {}, (err, res) => {
+      util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.OK, JSON.stringify(body), requiredHeaders, (err, res) => {
         res.body.should.eql({
           plaintext: 'PTEXT'
         });
@@ -207,7 +222,7 @@ describe('v1 API', function() {
       server = makeServer(new StorageServiceMockWithError());
       util = new HttpTestUtils(server);
 
-      util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.BAD_REQUEST, JSON.stringify(body), {}, (err, res) => {
+      util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.BAD_REQUEST, JSON.stringify(body), requiredHeaders, (err, res) => {
         if (err) {
           return done(err);
         }
