@@ -4,13 +4,27 @@ require('./init');
 require('should');
 const HttpTestUtils = require('./utils/http');
 const STATUS_CODES = require('../lib/control/util/status-codes');
+const STATUS = require('../lib/utils/status');
 const testServerPort = 3000;
+
+const goodDefaultToken = () => Promise.resolve({
+  status: STATUS.READY,
+  data: {
+    token: 'sometoken'
+  }
+});
 
 class MockProvider {
   constructor() {}
 }
 
 class StorageServiceMock {
+  constructor() {
+    this.defaultToken = {
+      initialize: goodDefaultToken
+    };
+  }
+
   lookup(token, secret, ProviderType) {
     return Promise.resolve(null);
   }
@@ -100,6 +114,7 @@ describe('v1 API', function() {
         res.body.should.have.property('uptime');
         res.body.should.have.property('status');
         res.body.should.have.property('version');
+        res.body.should.have.property('code');
         done();
       });
     });
