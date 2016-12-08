@@ -108,7 +108,7 @@ class HttpTestUtils {
     }
 
     if (code === STATUS_CODES.OK || code === STATUS_CODES.BAD_REQUEST) {
-      r = r.expect('Content-Type', /json/);
+      r = r.expect('Content-Type', 'application/json; charset=utf-8');
     }
 
     return r
