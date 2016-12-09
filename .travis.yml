@@ -1,5 +1,14 @@
+# According to https://docs.travis-ci.com/user/ci-environment,
+# `sudo: required` must be set to use `dist: trusty`
+dist: trusty
+sudo: required
+
 language: node_js
-sudo: false
+addons:
+  apt:
+    packages:
+      - build-essential
+      - uuid-dev
 script:
   - npm test
   - npm run lint
