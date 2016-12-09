@@ -4,13 +4,41 @@ require('./init');
 require('should');
 const HttpTestUtils = require('./utils/http');
 const STATUS_CODES = require('../lib/control/util/status-codes');
+const STATUS = require('../lib/utils/status');
 const testServerPort = 3000;
+
+const goodDefaultToken = () => Promise.resolve({
+  status: STATUS.READY,
+  data: {
+    token: 'sometoken'
+  }
+});
+
+const badDefaultToken = () => Promise.reject(new TypeError('Invalid token.'));
+
+const badDataDefaultToken = () => Promise.resolve({
+  status: STATUS.READY,
+  data: {}
+});
+
+const badStatusDefaultToken = () => Promise.resolve({
+  status: STATUS.PENDING,
+  data: {
+    token: 'sometoken'
+  }
+});
 
 class MockProvider {
   constructor() {}
 }
 
 class StorageServiceMock {
+  constructor(token) {
+    this.defaultToken = {
+      initialize: token
+    };
+  }
+
   lookup(token, secret, ProviderType) {
     return Promise.resolve(null);
   }
@@ -48,7 +76,7 @@ class StorageServiceMockWithError {
 function makeServer(storage) {
   const app = require('express')();
 
-  storage = (!storage) ? new StorageServiceMock() : storage;
+  storage = (!storage) ? new StorageServiceMock(goodDefaultToken) : storage;
 
   require('../lib/control/v1/index').attach(app, storage);
 
@@ -100,9 +128,47 @@ describe('v1 API', function() {
         res.body.should.have.property('uptime');
         res.body.should.have.property('status');
         res.body.should.have.property('version');
+        res.body.should.have.property('code');
         done();
       });
     });
+
+    [
+      {
+        desc: 'returns an error if an error is throw retrieving the default token.',
+        method: badDefaultToken,
+        status: 'Invalid token.',
+        code: STATUS_CODES.SERVICE_UNAVAILABLE
+      },
+      {
+        desc: 'returns an error if the default token is retrieved but the data from Vault is somehow bad.',
+        method: badDataDefaultToken,
+        status: 'No token data.',
+        code: 'NOTOKENDATA'
+      },
+      {
+        desc: 'returns an error if the default token is retrieved but is not ready.',
+        method: badStatusDefaultToken,
+        status: 'Manager is not ready.',
+        code: 'MANAGERNOTREADY'
+      }].forEach((test) => {
+        it(test.desc, function(done) {
+          server.close();
+          server = makeServer(new StorageServiceMock(test.method));
+          util = new HttpTestUtils(server);
+
+          util.testEndpointResponse(endpoint, 'GET', STATUS_CODES.SERVICE_UNAVAILABLE, {}, {}, (err, res) => {
+            res.body.should.have.property('uptime');
+            res.body.should.have.property('status');
+            res.body.should.have.property('version');
+            res.body.should.have.property('code');
+
+            res.body.status.should.equal(test.status);
+            res.body.code.should.equal(test.code);
+            done();
+          });
+        });
+      });
   });
 
   describe('/v1/token/default endpoint', function() {
