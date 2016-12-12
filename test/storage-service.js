@@ -15,11 +15,19 @@ const TokenProvider = require('../lib/providers/token');
 class ImmediateInitializeProvider {
 
   initialize() {
-    return Promise.resolve({data: 'SECRET'});
+    return Promise.resolve({
+      data: {
+        plaintext: 'SECRET'
+      }
+    });
   }
 
   renew() {
-    return Promise.resolve({data: 'SECRET'});
+    return Promise.resolve({
+      data: {
+        plaintext: 'SECRET'
+      }
+    });
   }
 }
 
@@ -90,12 +98,16 @@ class DelayedInitializeProvider {
 
   initialize() {
     return new Promise((resolve, reject) => {
-      setTimeout(() => resolve({data: 'SECRET'}), this.delay);
+      setTimeout(() => resolve({data: {
+        plaintext: 'SECRET'
+      }}), this.delay);
     });
   }
 
   renew() {
-    return Promise.resolve({data: 'SECRET'});
+    return Promise.resolve({data: {
+      plaintext: 'SECRET'
+    }});
   }
 }
 
@@ -163,7 +175,8 @@ describe('StorageService', function() {
 
       return manager.initialize().then(() => storage.lookup('default', 'test', ImmediateInitializeProvider)
         .then((data) => {
-          should(data).eql('SECRET');
+          should(data).containEql({plaintext: 'SECRET'});
+          should(data).have.keys('correlation_id', 'plaintext');
         }));
     });
 
@@ -199,7 +212,8 @@ describe('StorageService', function() {
 
       let numTimesToBeCalled = 2;
       const callback = (data) => {
-        should(data).eql('SECRET');
+        should(data).containEql({plaintext: 'SECRET'});
+        should(data).have.keys('correlation_id', 'plaintext');
 
         numTimesToBeCalled--;
         if (numTimesToBeCalled === 0) {
@@ -221,7 +235,8 @@ describe('StorageService', function() {
 
       let numTimesToBeCalled = 2;
       const callback = (data) => {
-        should(data).eql('SECRET');
+        should(data).containEql({plaintext: 'SECRET'});
+        should(data).have.key('correlation_id', 'plaintext');
 
         numTimesToBeCalled--;
         if (numTimesToBeCalled === 0) {
@@ -275,7 +290,8 @@ describe('StorageService', function() {
       return storage.lookup('default', {key: 'KEY', ciphertext: 'CTEXT'}, NonRenewingProvider)
       .then((result) => {
         storage._managers.size.should.equal(1);
-        result.should.eql({plaintext: 'PTEXT'});
+        result.should.containEql({plaintext: 'PTEXT'});
+        result.should.have.keys('correlation_id', 'plaintext');
       });
     });
 
@@ -285,7 +301,8 @@ describe('StorageService', function() {
       return storage.lookup('default', {key: 'KEY', ciphertext: 'CTEXT'}, DelayedNonRenewingProvider)
       .then((result) => {
         storage._managers.size.should.equal(1);
-        result.should.eql({plaintext: 'PTEXT'});
+        result.should.containEql({plaintext: 'PTEXT'});
+        result.should.have.keys('correlation_id', 'plaintext');
       });
     });
   });
