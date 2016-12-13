@@ -113,6 +113,7 @@ class HttpTestUtils {
 
     return r
       .set('Accept', 'application/json')
+      .set('Accept-Charset', 'utf-8')
       .expect(code);
   }
 }
