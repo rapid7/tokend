@@ -39,14 +39,6 @@ user node['tokend']['user'] do
   home node['tokend']['paths']['directory']
 end
 
-directory node['tokend']['paths']['directory'] do
-  owner node['tokend']['user']
-  group node['tokend']['group']
-  mode '0755'
-
-  recursive true
-end
-
 ## Fetch and install tokend
 remote_file 'tokend' do
   source Tokend::Helpers.github_download('rapid7', 'tokend', node['tokend']['version'])
@@ -56,17 +48,46 @@ remote_file 'tokend' do
   backup false
 end
 
+version_dir = "#{ node['tokend']['paths']['directory'] }-#{ node['tokend']['version'] }"
+
 package 'tokend' do
   source resources('remote_file[tokend]').path
   provider Chef::Provider::Package::Dpkg
+  notifies :run, "execute[chown #{version_dir}]"
 end
 
-## Upstart Service
-template '/etc/init/tokend.conf' do
+## Symlink the version dir to the specified tokend directory
+link node['tokend']['paths']['directory'] do
+  to version_dir
   owner node['tokend']['user']
   group node['tokend']['group']
 
-  source 'upstart.conf.erb'
+  notifies :restart, 'service[tokend]' if node['tokend']['enable']
+end
+
+## Chown the contents of the versioned tokend directory to the tokend user/group
+execute "chown #{version_dir}" do
+  command "chown -R #{node['tokend']['user']}:#{node['tokend']['group']} #{version_dir}"
+  user 'root'
+  action :nothing
+end
+
+if Chef::VersionConstraint.new("> 14.04").include?(node['platform_version'])
+  service_script_path = '/etc/systemd/system/tokend.service'
+  service_script = 'systemd.service.erb'
+  service_provider = Chef::Provider::Service::Systemd
+else
+  service_script_path = '/etc/init/tokend.conf'
+  service_script = 'upstart.conf.erb'
+  service_provider = Chef::Provider::Service::Upstart
+end
+
+# Set service script
+template service_script_path do
+  owner node['tokend']['user']
+  group node['tokend']['group']
+
+  source service_script
   variables(
     :description => 'tokend configuration service',
     :user => node['tokend']['user'],
@@ -75,6 +96,8 @@ template '/etc/init/tokend.conf' do
       "-c #{node['tokend']['paths']['configuration']}"
     ]
   )
+
+  notifies :restart, 'service[tokend]' if node['tokend']['enable']
 end
 
 directory 'tokend-configuration-directory' do
@@ -95,11 +118,10 @@ template 'tokend-configuration' do
   group node['tokend']['group']
 
   variables(:properties => node['tokend']['config'])
+  notifies :restart, 'service[tokend]' if node['tokend']['enable']
 end
 
 service 'tokend' do
-  ## The wrapping cookbook must call `action` on this resource to start/enable
-  action :nothing
-
-  provider Chef::Provider::Service::Upstart
+  action node['tokend']['enable'] ? [:start, :enable] : [:stop, :disable]
+  provider service_provider
 end
