@@ -30,7 +30,9 @@ function createVaultMock(options) {
     .get('/v1/sys/mounts')
     .reply(STATUS_CODES.OK, {'transit/': {config: {default_lease_ttl: 0, max_lease_ttl: 0}, type: 'transit'}})
     .get('/v1/sys/auth')
-    .reply(STATUS_CODES.OK, {'token/': {type: 'token'}});
+    .reply(STATUS_CODES.OK, {'token/': {type: 'token'}})
+    .get('/v1/sys/mounts/transit/tune')
+    .reply(STATUS_CODES.OK, {default_lease_ttl: 2592000, max_lease_ttl: 2592000});
 }
 
 describe('Provider/Transit', function() {
