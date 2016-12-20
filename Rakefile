@@ -49,7 +49,7 @@ def max_version
 end
 
 def install_dir
-  ::File.join('pkg', 'opt', name)
+  ::File.join('pkg', 'opt', "#{name}-#{version}")
 end
 
 def config_dir
