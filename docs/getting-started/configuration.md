@@ -70,7 +70,7 @@ This is the default configuration for Tokend, which you can find in
 	* `host` - The HTTP address of the Vault server. Defaults to `127.0.0.1`.
 	* `port` - The HTTP port of the Vault server. Defaults to `8200`.
 	* `tls` - Whether Vault should use TLS. Defaults to `true`.
-	* `token_ttl` - The TTL (time to live) of Vault tokens. This maps directly to Vault's [`default_lease_ttl`][default_lease_ttl] setting.
+  * `token_ttl` - The TTL (time to live) of Vault tokens. This maps directly to Vault's [`default_lease_ttl`][default_lease_ttl] setting. Default is 32 days (2764800 seconds).
 
 * `metadata` - This specifies settings for the [EC2 Metadata Service][ec2-metadata-service]
 

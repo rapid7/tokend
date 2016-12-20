@@ -1,6 +1,7 @@
 {
   "vault": {
-    "tls": true
+    "tls": true,
+    "token_ttl": "2764800"
   },
   "metadata": {
     "host": "169.254.169.254"
