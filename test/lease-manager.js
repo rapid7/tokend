@@ -92,6 +92,7 @@ class CountingRenewProvider {
 class ChangingTimeoutProvider {
   constructor() {
     this.renewed = false;
+    this.default_token_ttl = 0;
   }
 
   initialize() {
@@ -139,6 +140,7 @@ class ExpiringProvider {
       data: 'SECRET',
       lease_duration: 2
     };
+    this.default_token_ttl = 5;
   }
 
   initialize() {
@@ -283,7 +285,7 @@ describe('LeaseManager#_renew', function() {
   });
 
   it('should invalidate a token that expires soon', function(done) {
-    const manager = new LeaseManager(new ExpiringProvider(), '', {token_ttl: '5'});
+    const manager = new LeaseManager(new ExpiringProvider());
 
     manager.once('invalidate', () => {
       // Manager is set back to initial state
@@ -306,7 +308,7 @@ describe('LeaseManager#_renew', function() {
 
 
   it('should change the #_timer if the token/secret timeout has changed', function(done) {
-    const manager = new LeaseManager(new ChangingTimeoutProvider(), '', {token_ttl: '0'});
+    const manager = new LeaseManager(new ChangingTimeoutProvider());
     let timer = null,
       renewal = false;
 

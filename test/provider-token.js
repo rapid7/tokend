@@ -250,7 +250,9 @@ describe('Provider/Token', function() {
           .get('/v1/sys/mounts')
           .reply(STATUS_CODES.OK, {'secret/': {config: {default_lease_ttl: 0, max_lease_ttl: 0}, type: 'generic'}})
           .get('/v1/sys/auth')
-          .reply(STATUS_CODES.OK, {'token/': {type: 'token'}});
+          .reply(STATUS_CODES.OK, {'token/': {type: 'token'}})
+          .get('/v1/sys/mounts/sys/tune')
+          .reply(STATUS_CODES.OK, {default_lease_ttl: 2592000, max_lease_ttl: 2592000});
     });
 
     afterEach(function() {

@@ -22,7 +22,9 @@ function createHttpMock() {
       .get('/v1/sys/mounts')
       .reply(STATUS_CODES.OK, {'secret/': {config: {default_lease_ttl: 0, max_lease_ttl: 0}, type: 'generic'}})
       .get('/v1/sys/auth')
-      .reply(STATUS_CODES.OK, {'token/': {type: 'token'}});
+      .reply(STATUS_CODES.OK, {'token/': {type: 'token'}})
+      .get('/v1/sys/mounts/secret/tune')
+      .reply(STATUS_CODES.OK, {default_lease_ttl: 2592000, max_lease_ttl: 2592000});
 }
 
 const resp = {
@@ -63,8 +65,9 @@ describe('Provider/Generic', function() {
       const g = new GenericProvider('coolsecret', 'a-valid-token');
 
       // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
-      // the right endpoint we need to provide the method name to read the secret endpoint.
+      // the right endpoint we need to provide the method and mount name to read the secret endpoint.
       g._method = 'read';
+      g._mount = 'secret';
 
       return g.initialize().then(() => {
         should(g.data).not.be.null();
@@ -83,8 +86,9 @@ describe('Provider/Generic', function() {
     const g = new GenericProvider('coolsecret', 'a-valid-token');
 
     // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
-    // the right endpoint we need to provide the method name to read the secret endpoint.
+    // the right endpoint we need to provide the method and mount name to read the secret endpoint.
     g._method = 'read';
+    g._mount = 'secret';
 
     return g.initialize().then(() => {
       g.initialize().then((data) => {
@@ -107,8 +111,9 @@ describe('Provider/Generic', function() {
       const g = new GenericProvider('coolsecret', 'a-valid-token');
 
       // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
-      // the right endpoint we need to provide the method name to read the secret endpoint.
+      // the right endpoint we need to provide the method and mount name to read the secret endpoint.
       g._method = 'read';
+      g._mount = 'secret';
 
       return g.initialize().then((data) => data.should.eql(expectedResponse));
     });
@@ -127,8 +132,9 @@ describe('Provider/Generic', function() {
       const g = new GenericProvider('coolsecret', 'a-valid-token');
 
       // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
-      // the right endpoint we need to provide the method name to read the secret endpoint.
+      // the right endpoint we need to provide the method and mount name to read the secret endpoint.
       g._method = 'read';
+      g._mount = 'secret';
 
       return g.initialize()
         .then((data) => data.should.eql(expectedResponse))

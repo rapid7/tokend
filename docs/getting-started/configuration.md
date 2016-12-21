@@ -26,8 +26,7 @@ specified in order for Tokend to run.
 {
   "vault": {
     "host": "127.0.0.1",
-    "port": 8200,
-    "token_ttl": 60
+    "port": 8200
   },
   "warden": {
     "host": "127.0.0.1",
@@ -70,7 +69,6 @@ This is the default configuration for Tokend, which you can find in
 	* `host` - The HTTP address of the Vault server. Defaults to `127.0.0.1`.
 	* `port` - The HTTP port of the Vault server. Defaults to `8200`.
 	* `tls` - Whether Vault should use TLS. Defaults to `true`.
-	* `token_ttl` - The TTL (time to live) of Vault tokens. This maps directly to Vault's [`default_lease_ttl`][default_lease_ttl] setting.
 
 * `metadata` - This specifies settings for the [EC2 Metadata Service][ec2-metadata-service]
 
@@ -115,6 +113,5 @@ exposed for development purposes.
 
 [config-path]: ../../config/defaults.json
 [Vault]: https://www.vaultproject.io/
-[default_lease_ttl]: https://www.vaultproject.io/docs/config/#default_lease_ttl
 [ec2-metadata-service]: http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html
 [Warden]: https://github.com/rapid7/warden
