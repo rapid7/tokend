@@ -4,7 +4,7 @@ const chai = require('chai');
 const should = require('should');
 const time = require('../lib/utils/time-parser');
 
-describe.only('Util/Time Parser', function() {
+describe('Util/Time Parser', function() {
   it('parses a number without time unit', function() {
     time.parse('10').should.equal(10);
   });
