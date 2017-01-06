@@ -39,7 +39,7 @@ Config.defaults(require('../config/defaults.json'));
 Config.required([
   'vault:host',
   'vault:port',
-  'vault:token_ttl',
+  'vault:token_renew_increment',
   'warden:host',
   'warden:port',
   'warden:path'
