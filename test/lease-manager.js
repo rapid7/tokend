@@ -172,6 +172,10 @@ describe('LeaseManager#constructor', function() {
   it('has a default renewable flag that is false', function() {
     should(new LeaseManager().renewable).be.false();
   });
+
+  it('determines whether its provider can expire', function() {
+    should(new LeaseManager(new ExpiringProvider()).expires).be.true();
+  });
 });
 
 describe('LeaseManager#initialize', function() {
@@ -286,7 +290,7 @@ describe('LeaseManager#_renew', function() {
 
   it('should invalidate a token that expires soon', function(done) {
     Config.set('vault:token_renew_increment', 5);
-    const manager = new LeaseManager(new ExpiringProvider(), '');
+    const manager = new LeaseManager(new ExpiringProvider());
 
     manager.once('invalidate', () => {
       // Manager is set back to initial state
