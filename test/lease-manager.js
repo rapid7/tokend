@@ -135,6 +135,8 @@ class NonRenewableProvider {
  */
 class ExpiringProvider {
   constructor() {
+    this.expiration_time = new Date() + 2;
+    this.creation_time = new Date();
     this.data = {
       data: 'SECRET',
       lease_duration: 2
@@ -283,7 +285,8 @@ describe('LeaseManager#_renew', function() {
   });
 
   it('should invalidate a token that expires soon', function(done) {
-    const manager = new LeaseManager(new ExpiringProvider(), '', {token_ttl: '5'});
+    Config.set('vault:token_renew_increment', 5);
+    const manager = new LeaseManager(new ExpiringProvider(), '');
 
     manager.once('invalidate', () => {
       // Manager is set back to initial state
@@ -298,6 +301,9 @@ describe('LeaseManager#_renew', function() {
 
       // Provider data is cleared
       should(manager.provider.data).be.null();
+
+      // Reset config option
+      Config.set('vault:token_renew_increment', 60);
       done();
     });
 
