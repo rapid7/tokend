@@ -39,7 +39,7 @@ Config.defaults(require('../config/defaults.json'));
 Config.required([
   'vault:host',
   'vault:port',
-  'vault:token_ttl',
+  'vault:token_renew_increment',
   'warden:host',
   'warden:port',
   'warden:path'
@@ -48,7 +48,9 @@ Config.required([
 global.Log = Logger.attach(Config.get('log:level'));
 
 // Add request logging middleware
-app.use(Logger.requests(Log, Config.get('log:level')));
+if (Config.get('log:requests')) {
+  app.use(Logger.requests(Log, Config.get('log:level')));
+}
 
 // Add middleware for paring JSON requests
 app.use(BodyParser.json());

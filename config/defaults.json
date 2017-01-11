@@ -11,7 +11,8 @@
   },
   "log": {
     "level": "INFO",
-    "json": true
+    "json": true,
+    "requests": true
   },
   "warden": {
     "port": 8705,
