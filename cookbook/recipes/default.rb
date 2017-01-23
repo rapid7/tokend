@@ -82,8 +82,6 @@ template service_script_path do
       "-c #{node['tokend']['paths']['configuration']}"
     ]
   )
-
-  notifies :restart, 'service[tokend]' if node['tokend']['enable']
 end
 
 directory 'tokend-configuration-directory' do
