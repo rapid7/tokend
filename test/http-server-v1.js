@@ -304,4 +304,52 @@ describe('v1 API', function() {
       });
     });
   });
+
+  describe('/v1/kms/decrypt endpoint', function() {
+    const endpoint = '/v1/kms/decrypt';
+    const body = {ciphertext: 'CTEXT'};
+
+    it('accepts POST requests', function() {
+      return util.acceptRequest(endpoint, 'POST', JSON.stringify(body), requiredHeaders);
+    });
+
+    it('rejects non-POST requests', function() {
+      return util.rejectOtherRequests(endpoint, ['GET', 'PUT', 'DELETE'], JSON.stringify(body), requiredHeaders, 'POST');
+    });
+
+    it('decodes Base64 encoded secrets', function(done) {
+      server.close();
+      server = makeServer(new StorageServiceMockWithTransitResponse());
+      util = new HttpTestUtils(server);
+
+      util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.OK, JSON.stringify(body), requiredHeaders, (err, res) => {
+        res.body.should.eql({
+          plaintext: 'PTEXT'
+        });
+
+        done();
+      });
+    });
+
+    it('bubbles errors up to the caller', function(done) {
+      server.close();
+      server = makeServer(new StorageServiceMockWithError());
+      util = new HttpTestUtils(server);
+
+      util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.BAD_REQUEST, JSON.stringify(body), requiredHeaders, (err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        res.body.should.eql({
+          error: {
+            message: 'Funky looking error message',
+            name: 'Error'
+          }
+        });
+
+        done();
+      });
+    });
+  });
 });
