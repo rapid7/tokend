@@ -52,6 +52,13 @@ if (Config.get('log:requests')) {
   app.use(Logger.requests(Log, Config.get('log:level')));
 }
 
+// Retrieve the instance region and store it in the Config
+const Metadata = require('../lib/utils/metadata');
+
+Metadata.region().then((region) => {
+  Config.set('metadata:region', region);
+});
+
 // Add middleware for paring JSON requests
 app.use(BodyParser.json());
 
