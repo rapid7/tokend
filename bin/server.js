@@ -55,9 +55,13 @@ if (Config.get('log:requests')) {
 // Retrieve the instance region and store it in the Config
 const Metadata = require('../lib/utils/metadata');
 
-Metadata.region().then((region) => {
-  Config.set('metadata:region', region);
-});
+// Check if a specific region has been set. Maybe someone
+// will want to use a key from a different region?
+if (!Config.get('metadata:region')) {
+  Metadata.region().then((region) => {
+    Config.set('metadata:region', region);
+  });
+}
 
 // Add middleware for paring JSON requests
 app.use(BodyParser.json());
@@ -79,4 +83,3 @@ server.on('error', (err) => {
 server.listen(port, host, () => {
   Log.log('INFO', `Listening on ${host}:${port}`);
 });
-
