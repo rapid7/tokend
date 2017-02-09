@@ -57,9 +57,9 @@ const Metadata = require('../lib/utils/metadata');
 
 // Check if a specific region has been set. Maybe someone
 // will want to use a key from a different region?
-if (!Config.get('metadata:region')) {
+if (!Config.get('kms:region')) {
   Metadata.region().then((region) => {
-    Config.set('metadata:region', region);
+    Config.set('kms:region', region);
   });
 }
 
