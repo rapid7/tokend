@@ -60,6 +60,10 @@ const Metadata = require('../lib/utils/metadata');
 if (!Config.get('kms:region')) {
   Metadata.region().then((region) => {
     Config.set('kms:region', region);
+  }).catch((err) => {
+    Log.log('ERROR', err);
+    Log.log('INFO', "Setting kms region to 'us-east-1'.");
+    Config.set('kms:region', 'us-east-1');
   });
 }
 
