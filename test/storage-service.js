@@ -29,6 +29,7 @@ class ImmediateInitializeProvider {
       }
     });
   }
+  requireVaultToken() { }
 }
 
 class MockTokenProvider {
@@ -88,6 +89,7 @@ class MockSecretProvider {
   }
 
   renew() {}
+  requireVaultToken() { }
 }
 
 class DelayedInitializeProvider {
@@ -109,6 +111,7 @@ class DelayedInitializeProvider {
       plaintext: 'SECRET'
     }});
   }
+  requireVaultToken() { }
 }
 
 class NeverInitializeProvider {
@@ -117,6 +120,7 @@ class NeverInitializeProvider {
   }
 
   renew() {}
+  requireVaultToken() { }
 }
 
 class NonRenewingProvider {
@@ -126,6 +130,7 @@ class NonRenewingProvider {
       data: {plaintext: 'PTEXT'}
     });
   }
+  requireVaultToken() { }
 }
 
 class DelayedNonRenewingProvider {
@@ -139,6 +144,7 @@ class DelayedNonRenewingProvider {
       }, 200);
     });
   }
+  requireVaultToken() { }
 }
 
 function setTokenProvider(storage, provider) {

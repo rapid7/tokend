@@ -6,6 +6,7 @@ const HttpTestUtils = require('./utils/http');
 const STATUS_CODES = require('../lib/control/util/status-codes');
 const STATUS = require('../lib/utils/status');
 const testServerPort = 3000;
+const AWS = require('aws-sdk-mock');
 
 const goodDefaultToken = () => Promise.resolve({
   status: STATUS.READY,
@@ -75,6 +76,8 @@ class StorageServiceMockWithError {
 
 function makeServer(storage) {
   const app = require('express')();
+
+  app.use(require('body-parser').json());
 
   storage = (!storage) ? new StorageServiceMock(goodDefaultToken) : storage;
 
@@ -300,6 +303,87 @@ describe('v1 API', function() {
           }
         });
 
+        done();
+      });
+    });
+  });
+
+  describe('/v1/kms/decrypt endpoint', function() {
+    const StorageService = require('../lib/storage-service');
+    const s = new StorageService();
+
+    beforeEach(function() {
+      server.close();
+      server = makeServer(s);
+      util = new HttpTestUtils(server);
+
+      AWS.mock('KMS', 'decrypt', function(params, callback) {
+        callback(null, {
+          KeyId: 'arn:aws:kms:us-east-1:ACCOUNT:key/SOME-UUID',
+          PlainText: Buffer.from('this-is-a-secret', 'utf8').toString('base64')
+        });
+      });
+    });
+
+    afterEach(function() {
+      AWS.restore();
+    });
+
+    const endpoint = '/v1/kms/decrypt';
+    const body = {ciphertext: 'CTEXT'};
+
+    it('accepts POST requests', function() {
+      return util.acceptRequest(endpoint, 'POST', JSON.stringify(body), requiredHeaders);
+    });
+
+    it('rejects non-POST requests', function() {
+      return util.rejectOtherRequests(endpoint, ['GET', 'PUT', 'DELETE'], JSON.stringify(body), requiredHeaders, 'POST');
+    });
+
+    it('decodes Base64 encoded secrets', function(done) {
+      util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.OK, JSON.stringify(body), requiredHeaders, (err, res) => {
+        res.body.should.eql({
+          keyid: 'arn:aws:kms:us-east-1:ACCOUNT:key/SOME-UUID',
+          plaintext: 'this-is-a-secret'
+        });
+
+        done();
+      });
+    });
+
+    it('bubbles errors up to the caller', function(done) {
+      AWS.restore();
+      AWS.mock('KMS', 'decrypt', function(params, callback) {
+        callback(new Error('Funky looking error message'), null);
+      });
+
+      util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.BAD_REQUEST, JSON.stringify(body), requiredHeaders, (err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        res.body.should.eql({
+          error: {
+            message: 'Funky looking error message',
+            name: 'Error'
+          }
+        });
+
+        done();
+      });
+    });
+
+    it('has a correlation id in the StorageService', function() {
+      const KMSProvider = require('../lib/providers/kms');
+
+      return s.lookup('', body, KMSProvider).then((result) => {
+        result.should.have.property('correlation_id');
+      });
+    });
+
+    it('does not have a correlation id in the response', function(done) {
+      util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.OK, body, requiredHeaders, (err, res) => {
+        res.body.should.not.have.property('correlation_id');
         done();
       });
     });

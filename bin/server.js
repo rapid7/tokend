@@ -52,6 +52,21 @@ if (Config.get('log:requests')) {
   app.use(Logger.requests(Log, Config.get('log:level')));
 }
 
+// Retrieve the instance region and store it in the Config
+const Metadata = require('../lib/utils/metadata');
+
+// Check if a specific region has been set. Maybe someone
+// will want to use a key from a different region?
+if (!Config.get('kms:region')) {
+  Metadata.region().then((region) => {
+    Config.set('kms:region', region);
+  }).catch((err) => {
+    Log.log('ERROR', err);
+    Log.log('INFO', "Setting kms region to 'us-east-1'.");
+    Config.set('kms:region', 'us-east-1');
+  });
+}
+
 // Add middleware for paring JSON requests
 app.use(BodyParser.json());
 
@@ -72,4 +87,3 @@ server.on('error', (err) => {
 server.listen(port, host, () => {
   Log.log('INFO', `Listening on ${host}:${port}`);
 });
-
