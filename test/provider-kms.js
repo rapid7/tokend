@@ -36,9 +36,17 @@ describe('Provider/KMS', function() {
 
     it('requires secret.ciphertext be provided', function() {
       [null, undefined, ''].forEach(function(value) {
-        should.throws(() => new KMSProvider({key: 'KEY', ciphertext: value}),
+        should.throws(() => new KMSProvider({key: 'KEY', ciphertext: value, region: 'region'}),
             preconditions.IllegalValueError,
             `invalid "secret.ciphertext" argument: ${value}`);
+      });
+    });
+
+    it('requires secret.region be provided', function() {
+      [null, undefined, ''].forEach(function(value) {
+        should.throws(() => new KMSProvider({key: 'KEY', ciphertext: 'ciphertext', region: value}),
+            preconditions.IllegalValueError,
+            `invalid "secret.region" argument: ${value}`);
       });
     });
 
@@ -56,7 +64,7 @@ describe('Provider/KMS', function() {
         AWS.mock('KMS', 'decrypt', function(params, callback) {
           callback(null, validResponse);
         });
-        const provider = new KMSProvider({ciphertext: 'foo'});
+        const provider = new KMSProvider({ciphertext: 'foo', region: 'us-east-1'});
 
         return provider.initialize().then((data) => {
           data.should.have.keys('data');
@@ -70,13 +78,19 @@ describe('Provider/KMS', function() {
           // KMS.decrypt returns an error in the node (err, data) CB form
           callback(generateKMSError('InvalidCiphertextException'), null);
         });
-        const provider = new KMSProvider({ciphertext: 'foo'});
+        const provider = new KMSProvider({ciphertext: 'foo', region: 'us-east-1'});
 
         return provider.initialize().catch((err) => {
           err.name.should.equal('InvalidCiphertextException');
         });
       });
+
+      it('instantiates the KMS client with the specified region', function() {
+        const region = 'us-east-1';
+        const provider = new KMSProvider({ciphertext: 'foo', region});
+
+        provider._client.config.region.should.equal(region);
+      });
     });
-    //InvalidCiphertextException
   });
 });
