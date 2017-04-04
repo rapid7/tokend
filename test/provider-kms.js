@@ -42,41 +42,82 @@ describe('Provider/KMS', function() {
       });
     });
 
-    describe('KMSProvider#initialize', function() {
-      const validResponse = {
-        KeyId: 'arn:aws:kms:us-east-1:ACCOUNT:key/SOME-UUID',
-        PlainText: Buffer.from('this-is-a-secret', 'utf8').toString('base64')
-      };
+    it('validates secret.region, falls back to default (not in config) if not provided', function() {
+      [null, undefined, ''].forEach(function(value) {
+        const provider = new KMSProvider({key: 'KEY', ciphertext: 'ctext', region: value});
 
-      afterEach(function() {
-        AWS.restore();
-      });
-
-      it('returns decrypted data if the ciphertext is valid', function() {
-        AWS.mock('KMS', 'decrypt', function(params, callback) {
-          callback(null, validResponse);
-        });
-        const provider = new KMSProvider({ciphertext: 'foo'});
-
-        return provider.initialize().then((data) => {
-          data.should.have.keys('data');
-          data.data.should.have.keys(['PlainText', 'KeyId']);
-          Buffer.from(data.data.PlainText, 'base64').toString().should.equal('this-is-a-secret');
-        });
-      });
-
-      it('returns an error if the ciphertext is invalid', function() {
-        AWS.mock('KMS', 'decrypt', function(params, callback) {
-          // KMS.decrypt returns an error in the node (err, data) CB form
-          callback(generateKMSError('InvalidCiphertextException'), null);
-        });
-        const provider = new KMSProvider({ciphertext: 'foo'});
-
-        return provider.initialize().catch((err) => {
-          err.name.should.equal('InvalidCiphertextException');
-        });
+        provider._client.config.region.should.equal('us-east-1');
       });
     });
-    //InvalidCiphertextException
+
+    it('instantiates the KMS client with the specified region', function() {
+      const region = 'eu-central-1';
+      const provider = new KMSProvider({ciphertext: 'foo', region});
+
+      provider._client.config.region.should.equal(region);
+    });
+
+    it('validates region in config, falls back to default if not provided', function() {
+      const _Config = global.Config;
+
+      [null, undefined, ''].forEach(function(value) {
+        global.Config = {
+          get: (() => value)
+        };
+        const provider = new KMSProvider({ciphertext: 'ctext'});
+
+        provider._client.config.region.should.equal('us-east-1');
+      });
+      global.Config = _Config;
+    });
+
+    it('instantiates the KMS client with value provided in config (if region not provided)', function() {
+      const _Config = global.Config;
+      const region = 'eu-central-1';
+
+      global.Config = {
+        get: (() => region)
+      };
+      const provider = new KMSProvider({ciphertext: 'ctext'});
+
+      provider._client.config.region.should.equal(region);
+      global.Config = _Config;
+    });
+  });
+
+  describe('KMSProvider#initialize', function() {
+    const validResponse = {
+      KeyId: 'arn:aws:kms:us-east-1:ACCOUNT:key/SOME-UUID',
+      PlainText: Buffer.from('this-is-a-secret', 'utf8').toString('base64')
+    };
+
+    afterEach(function() {
+      AWS.restore();
+    });
+
+    it('returns decrypted data if the ciphertext is valid', function() {
+      AWS.mock('KMS', 'decrypt', function(params, callback) {
+        callback(null, validResponse);
+      });
+      const provider = new KMSProvider({ciphertext: 'foo', region: 'us-east-1'});
+
+      return provider.initialize().then((data) => {
+        data.should.have.keys('data');
+        data.data.should.have.keys(['PlainText', 'KeyId']);
+        Buffer.from(data.data.PlainText, 'base64').toString().should.equal('this-is-a-secret');
+      });
+    });
+
+    it('returns an error if the ciphertext is invalid', function() {
+      AWS.mock('KMS', 'decrypt', function(params, callback) {
+        // KMS.decrypt returns an error in the node (err, data) CB form
+        callback(generateKMSError('InvalidCiphertextException'), null);
+      });
+      const provider = new KMSProvider({ciphertext: 'foo', region: 'us-east-1'});
+
+      return provider.initialize().catch((err) => {
+        err.name.should.equal('InvalidCiphertextException');
+      });
+    });
   });
 });

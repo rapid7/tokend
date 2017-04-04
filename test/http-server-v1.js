@@ -330,7 +330,7 @@ describe('v1 API', function() {
     });
 
     const endpoint = '/v1/kms/decrypt';
-    const body = {ciphertext: 'CTEXT'};
+    const body = {ciphertext: 'CTEXT', region: 'us-east-1'};
 
     it('accepts POST requests', function() {
       return util.acceptRequest(endpoint, 'POST', JSON.stringify(body), requiredHeaders);
