@@ -4,7 +4,7 @@ const KMSProvider = require('../lib/providers/kms');
 const AWS = require('aws-sdk-mock');
 const should = require('should');
 const preconditions = require('conditional');
-const UUID = require('node-libuuid');
+const UUID = require('uuid');
 
 /**
  * Generate an AWS-like error message for mocking bad KMS requests
