@@ -5,6 +5,7 @@ const AWS = require('aws-sdk-mock');
 const should = require('should');
 const preconditions = require('conditional');
 const UUID = require('uuid');
+const crypto = require('crypto');
 
 /**
  * Generate an AWS-like error message for mocking bad KMS requests
@@ -83,12 +84,25 @@ describe('Provider/KMS', function() {
       provider._client.config.region.should.equal(region);
       global.Config = _Config;
     });
+
+    it('sets the _datakey property if a datakey value is provided', function() {
+      const provider = new KMSProvider({ciphertext: 'foo', region: 'us-east-1', datakey: 'foobar'});
+
+      provider._datakey.should.be.true();
+    });
+
+    it('sets the CiphertextBlob property of _parameters to the base64 encoded datakey', function() {
+      const provider = new KMSProvider({ciphertext: 'foo', region: 'us-east-1', datakey: 'foobar'});
+
+      provider._parameters.CiphertextBlob.should.eql(Buffer.from('foobar', 'base64'));
+    });
   });
 
   describe('KMSProvider#initialize', function() {
+    const plaintext = Buffer.from('this-is-a-secret', 'utf-8').toString('base64');
     const validResponse = {
       KeyId: 'arn:aws:kms:us-east-1:ACCOUNT:key/SOME-UUID',
-      PlainText: Buffer.from('this-is-a-secret', 'utf8').toString('base64')
+      Plaintext: Buffer.from(plaintext, 'base64')
     };
 
     afterEach(function() {
@@ -103,8 +117,8 @@ describe('Provider/KMS', function() {
 
       return provider.initialize().then((data) => {
         data.should.have.keys('data');
-        data.data.should.have.keys(['PlainText', 'KeyId']);
-        Buffer.from(data.data.PlainText, 'base64').toString().should.equal('this-is-a-secret');
+        data.data.should.have.keys(['Plaintext', 'KeyId']);
+        Buffer.from(data.data.Plaintext, 'base64').toString().should.equal('this-is-a-secret');
       });
     });
 
@@ -117,6 +131,26 @@ describe('Provider/KMS', function() {
 
       return provider.initialize().catch((err) => {
         err.name.should.equal('InvalidCiphertextException');
+      });
+    });
+
+    it('deciphers the ciphertext if a valid datakey is provided', function() {
+      AWS.mock('KMS', 'decrypt', function(params, callback) {
+        callback(null, validResponse);
+      });
+
+      const secret = 'foo';
+      const cipher = crypto.createCipher('aes-256-cbc', 'this-is-a-secret');
+      let ciphertext = cipher.update(secret, 'utf8', 'base64');
+
+      ciphertext += cipher.final('base64');
+
+      const provider = new KMSProvider({ciphertext, region: 'us-east-1', datakey: plaintext});
+
+      return provider.initialize().then((data) => {
+        data.should.have.keys('data');
+        data.data.should.have.keys(['Plaintext', 'KeyId']);
+        Buffer.from(data.data.Plaintext, 'base64').toString().should.equal(secret);
       });
     });
   });
