@@ -36,6 +36,7 @@ version_dir = "#{ node['tokend']['paths']['directory'] }-#{ node['tokend']['vers
 package 'tokend' do
   source resources('remote_file[tokend]').path
   provider Chef::Provider::Package::Dpkg
+  version node['tokend']['version']
 end
 
 ## Symlink the version dir to the specified tokend directory
