@@ -16,3 +16,4 @@ long_description IO.read(::File.join(project_path, 'README.md')) rescue ''
 version package_dot_json.fetch('version', '0.0.1')
 
 depends 'nodejs'
+depends 'ark', '~> 3.0.0'
