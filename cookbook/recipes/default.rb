@@ -37,11 +37,15 @@ package 'tokend' do
   source resources('remote_file[tokend]').path
   provider Chef::Provider::Package::Dpkg
   version node['tokend']['version']
+
+  notifies :create, "link[#{node['tokend']['paths']['directory']}]", :immediately
 end
 
 ## Symlink the version dir to the specified tokend directory
 link node['tokend']['paths']['directory'] do
   to version_dir
+
+  action :nothing
   notifies :restart, 'service[tokend]' if node['tokend']['enable']
 end
 
