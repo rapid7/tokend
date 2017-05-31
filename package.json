@@ -1,6 +1,6 @@
 {
   "name": "tokend",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A secret and token management interface for Vault.",
   "directories": {
     "doc": "docs",
