@@ -7,7 +7,13 @@ const args = require('yargs')
   .option('c', {
     alias: 'config',
     describe: 'Load configuration from file',
+    default: '/etc/tokend/config.json',
     type: 'string'
+  })
+  .option('colorize', {
+    describe: 'Colorize log output',
+    type: 'boolean',
+    default: false
   })
   .help('help')
   .argv;
@@ -23,13 +29,7 @@ const server = HTTP.createServer(app);
 
 // Load nconf into the global namespace
 global.Config = require('nconf').env()
-  .argv({
-    config: {
-      alias: 'c',
-      default: '/etc/tokend/config.json',
-      describe: 'Path to local tokend configuration'
-    }
-  });
+  .argv();
 
 if (args.c) {
   Config.file(Path.resolve(process.cwd(), args.c));
