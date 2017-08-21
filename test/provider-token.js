@@ -6,7 +6,7 @@ const should = require('should');
 const nock = require('nock');
 const AWS = require('aws-sdk');
 const STATUS_CODES = require('./../lib/control/util/status-codes');
-const Vaulted = require('vaulted');
+const Vault = require('node-vault');
 const TokenProvider = require('../lib/providers/token');
 
 const VAULT_PORT = 3030;
@@ -22,7 +22,9 @@ function setUp() {
       .onThirdCall().callsArgWith(1, null, 'pkcs7 signature');
 
   const m = new AWS.MetadataService({host: '10.10.10.10'});
-  const v = new Vaulted({vault_host: '127.0.0.1', vault_port: VAULT_PORT, vault_ssl: false});
+  const v = new Vault({
+    endpoint: `http://127.0.0.1:${VAULT_PORT}`
+  });
   const warden = {host: '127.0.0.1', port: WARDEN_PORT};
   const token = new TokenProvider('', '', {metadata: {client: m}, vault: {client: v}, warden});
 
@@ -40,17 +42,14 @@ describe('Provider/Token', function() {
     it('Can instantiate dependent services configured with options', function() {
       const token = new TokenProvider('', '', {
         metadata: {host: '10.10.10.10'},
-        vault: {host: 'vaultserver.com', port: VAULT_PORT, ssl: true},
+        vault: {endpoint: `https://vaultserver.com:${VAULT_PORT}`},
         warden: {host: 'wardenurl.net', port: WARDEN_PORT}
       });
 
       token._metadata.should.be.instanceof(AWS.MetadataService);
       token._metadata.host.should.equal('10.10.10.10');
 
-      token._client.should.be.instanceof(Vaulted);
-      token._client.config.get('vault_host').should.equal('vaultserver.com');
-      token._client.config.get('vault_port').should.equal(VAULT_PORT);
-      token._client.config.get('vault_ssl').should.equal(true);
+      token._client.endpoint.should.equal(`https://vaultserver.com:${VAULT_PORT}`);
 
       token._warden.should.be.Object();
       token._warden.hostname.should.equal('wardenurl.net');
@@ -59,7 +58,9 @@ describe('Provider/Token', function() {
 
     it('Can instantiate dependent services by passing instances of them via options', function() {
       const m = new AWS.MetadataService({host: '10.10.10.10'});
-      const v = new Vaulted({vault_host: 'vaultserver.com', vault_port: VAULT_PORT, vault_ssl: true});
+      const v = new Vault({
+        endpoint: `https://vaultserver.com:${VAULT_PORT}`
+      });
       const token = new TokenProvider('', '', {
         metadata: {client: m},
         vault: {client: v},
@@ -69,10 +70,8 @@ describe('Provider/Token', function() {
       token._metadata.should.be.instanceof(AWS.MetadataService);
       token._metadata.host.should.equal('10.10.10.10');
 
-      token._client.should.be.instanceof(Vaulted);
-      token._client.config.get('vault_host').should.equal('vaultserver.com');
-      token._client.config.get('vault_port').should.equal(VAULT_PORT);
-      token._client.config.get('vault_ssl').should.equal(true);
+      token._client.should.have.properties('apiVersion', 'endpoint', 'token', 'read', 'write', 'request', 'list', 'help');
+      token._client.endpoint.should.equal(`https://vaultserver.com:${VAULT_PORT}`);
     });
 
     it('Falls back on defaults if options aren\'t provided', function() {
@@ -81,10 +80,7 @@ describe('Provider/Token', function() {
       token._metadata.should.be.instanceof(AWS.MetadataService);
       token._metadata.host.should.equal('169.254.169.254');
 
-      token._client.should.be.instanceof(Vaulted);
-      token._client.config.get('vault_host').should.equal('127.0.0.1');
-      token._client.config.get('vault_port').should.equal(8200); // eslint-disable-line rapid7/static-magic-numbers
-      token._client.config.get('vault_ssl').should.equal(true);
+      token._client.endpoint.should.equal('https://127.0.0.1:8200');
 
       token._warden.should.be.Object();
       token._warden.hostname.should.equal('127.0.0.1');
@@ -155,7 +151,10 @@ describe('Provider/Token', function() {
         host: '169.254.169.254',
         httpOptions: {timeout: 200} // eslint-disable-line rapid7/static-magic-numbers
       });
-      const v = new Vaulted({vault_host: '127.0.0.1', vault_port: VAULT_PORT, vault_ssl: true});
+
+      const v = new Vault({
+        endpoint: `https://127.0.0.1:${VAULT_PORT}`
+      });
       const token = new TokenProvider('', '', {metadata: {client: m}, vault: {client: v}, warden: this.warden});
 
       nock('http://169.254.169.254').get('/').thrice();
@@ -262,7 +261,7 @@ describe('Provider/Token', function() {
     it('Renews the Vault token when #renew() is called', function() {
       const lease_duration = 300;
 
-      scope.post('/v1/auth/token/renew/somereallycooltoken')
+      scope.post('/v1/auth/token/renew')
         .reply(STATUS_CODES.OK, {
           auth: {client_token: 'somereallycooltoken', policies: [], metadata: {}, lease_duration, renewable: true}
         });
