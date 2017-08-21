@@ -196,7 +196,8 @@ describe('StorageService', function() {
         storage._managers.set(secret, manager);
 
         storage.lookup('default', secret, DelayedInitializeProvider).then((data) => {
-          should(data).eql('SECRET');
+          should(data).have.keys('correlation_id', 'plaintext');
+          should(data.plaintext).eql('SECRET');
         });
       });
     });

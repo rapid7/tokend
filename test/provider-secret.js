@@ -3,10 +3,10 @@
 const SecretProvider = require('../lib/providers/secret');
 
 describe('Provider/Secret', function() {
-  it('sets the correct Vaulted method', function() {
+  it('sets the correct path prefix', function() {
     const s = new SecretProvider('foo', 'bar');
 
-    s._method.should.equal('read');
+    s.path.should.startWith('secret');
     Object.getPrototypeOf(s.constructor).name.should.equal('GenericProvider');
   });
 });

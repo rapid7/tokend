@@ -60,7 +60,7 @@ describe('Provider/Generic', function() {
         lease_duration: 2592000
       }, resp));
 
-      const g = new GenericProvider('coolsecret', 'a-valid-token');
+      const g = new GenericProvider('secret/coolsecret', 'a-valid-token');
 
       // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
       // the right endpoint we need to provide the method name to read the secret endpoint.
@@ -80,7 +80,7 @@ describe('Provider/Generic', function() {
       lease_duration: 2592000
     }, resp));
 
-    const g = new GenericProvider('coolsecret', 'a-valid-token');
+    const g = new GenericProvider('secret/coolsecret', 'a-valid-token');
 
     // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
     // the right endpoint we need to provide the method name to read the secret endpoint.
@@ -104,7 +104,7 @@ describe('Provider/Generic', function() {
 
       scope.get('/v1/secret/coolsecret').reply(STATUS_CODES.OK, expectedResponse);
 
-      const g = new GenericProvider('coolsecret', 'a-valid-token');
+      const g = new GenericProvider('secret/coolsecret', 'a-valid-token');
 
       // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
       // the right endpoint we need to provide the method name to read the secret endpoint.
@@ -124,7 +124,7 @@ describe('Provider/Generic', function() {
           .get('/v1/secret/coolsecret')
           .reply(STATUS_CODES.OK, expectedResponse);
 
-      const g = new GenericProvider('coolsecret', 'a-valid-token');
+      const g = new GenericProvider('secret/coolsecret', 'a-valid-token');
 
       // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
       // the right endpoint we need to provide the method name to read the secret endpoint.
@@ -151,7 +151,7 @@ describe('Provider/Generic', function() {
     });
 
     it('executes the callback with an error if the path or token is invalid', function() {
-      const g = new GenericProvider('notasecret', 'a-valid-token');
+      const g = new GenericProvider('secret/notasecret', 'a-valid-token');
 
       // We're testing the Generic provider (and by extension the secret and cubbyhole providers) so to hit
       // the right endpoint we need to provide the method name to read the secret endpoint.
