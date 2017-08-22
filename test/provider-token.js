@@ -4,6 +4,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const should = require('should');
 const nock = require('nock');
+const errors = require('request-promise-native/errors');
 const AWS = require('aws-sdk');
 const STATUS_CODES = require('./../lib/control/util/status-codes');
 const Vault = require('node-vault');
@@ -52,8 +53,7 @@ describe('Provider/Token', function() {
       token._client.endpoint.should.equal(`https://vaultserver.com:${VAULT_PORT}`);
 
       token._warden.should.be.Object();
-      token._warden.hostname.should.equal('wardenurl.net');
-      token._warden.port.should.equal(WARDEN_PORT);
+      token._warden.uri.should.equal(`http://wardenurl.net:${WARDEN_PORT}/`);
     });
 
     it('Can instantiate dependent services by passing instances of them via options', function() {
@@ -83,8 +83,7 @@ describe('Provider/Token', function() {
       token._client.endpoint.should.equal('https://127.0.0.1:8200');
 
       token._warden.should.be.Object();
-      token._warden.hostname.should.equal('127.0.0.1');
-      token._warden.port.should.equal(3000); // eslint-disable-line rapid7/static-magic-numbers
+      token._warden.uri.should.equal('http://127.0.0.1:3000/');
     });
   });
 
@@ -118,9 +117,9 @@ describe('Provider/Token', function() {
         data: {token: 'somereallycooltoken'}
       };
 
-      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
+      nock(`http://${this.warden.host}:${this.warden.port}`).post('/').once().reply(STATUS_CODES.OK, resp);
 
-      this.token._getDocument().then(this.token._sendDocument.bind(this.token)).should.eventually.eql(resp);
+      return this.token._getDocument().then(this.token._sendDocument.bind(this.token)).should.eventually.eql(resp);
     });
 
     it('Returns a resolved Promise if the Warden server returns it', function() {
@@ -132,7 +131,7 @@ describe('Provider/Token', function() {
         metadata: {user: 'me!'}
       };
 
-      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
+      nock(`http://${this.warden.host}:${this.warden.port}`).post('/').once().reply(STATUS_CODES.OK, resp);
 
       return this.token.initialize().then((data) => {
         data.should.eql({
@@ -192,16 +191,16 @@ describe('Provider/Token', function() {
     it('Returns a rejected Promise if it does not receive a 200OK from the Warden server', function() {
       const resp = {this: 'is', bad: 'response'};
 
-      nock(`http://${this.warden.host}:${this.warden.port}/`)
-          .post()
+      nock(`http://${this.warden.host}:${this.warden.port}`)
+          .post('/')
           .once()
           .reply(STATUS_CODES.BAD_REQUEST, resp);
 
       return this.token.initialize().then((data) => {
         should(data).be.null();
       }).catch((err) => {
-        err.should.be.an.Error();
-        err.message.should.equal(`${STATUS_CODES.BAD_REQUEST}: ${JSON.stringify(resp)}`);
+        err.should.be.instanceOf(errors.StatusCodeError);
+        err.message.should.equal(`${STATUS_CODES.BAD_REQUEST} - ${JSON.stringify(resp)}`);
       });
     });
 
@@ -221,7 +220,7 @@ describe('Provider/Token', function() {
         }
       };
 
-      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
+      nock(`http://${this.warden.host}:${this.warden.port}`).post('/').once().reply(STATUS_CODES.OK, resp);
 
       return this.token.initialize().then((data) => {
         data.should.eql(expectedData);
@@ -346,7 +345,7 @@ describe('Provider/Token', function() {
         metadata: {user: 'me!'}
       };
 
-      nock(`http://${this.warden.host}:${this.warden.port}/`).post().once().reply(STATUS_CODES.OK, resp);
+      nock(`http://${this.warden.host}:${this.warden.port}`).post('/').once().reply(STATUS_CODES.OK, resp);
 
       return this.token.initialize().then(() => {
         should(this.token.data).not.be.null();
