@@ -8,6 +8,11 @@
   "metadata": {
     "host": "127.0.0.1:8900"
   },
+  "service": {
+    "storage": {
+      "timeout": 5000
+    }
+  },
   "warden": {
     "host": "127.0.0.1"
   },
