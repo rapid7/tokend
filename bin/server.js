@@ -72,7 +72,9 @@ app.use(BodyParser.json());
 
 const StorageService = require('../lib/storage-service');
 
-const storage = new StorageService();
+const storage = new StorageService({
+  timeout: Config.get('service:storage:timeout')
+});
 
 require('../lib/control/v1').attach(app, storage);
 

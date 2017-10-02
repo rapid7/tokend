@@ -7,7 +7,10 @@
   },
   "service": {
     "host": "127.0.0.1",
-    "port": 4500
+    "port": 4500,
+    "storage": {
+      "timeout": 500
+    }
   },
   "log": {
     "level": "INFO",
