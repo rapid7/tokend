@@ -7,6 +7,7 @@ const STATUS_CODES = require('../lib/control/util/status-codes');
 const STATUS = require('../lib/utils/status');
 const testServerPort = 3000;
 const AWS = require('aws-sdk-mock');
+const sinon = require('sinon');
 
 const goodDefaultToken = () => Promise.resolve({
   status: STATUS.READY,
@@ -384,6 +385,19 @@ describe('v1 API', function() {
     it('does not have a correlation id in the response', function(done) {
       util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.OK, body, requiredHeaders, (err, res) => {
         res.body.should.not.have.property('correlation_id');
+        done();
+      });
+    });
+
+    it('doesn\'t use the StorageService', function(done) {
+      const stub = sinon.stub(s, 'lookup').returns(Promise.resolve({
+        KeyId: 'arn:aws:kms:us-east-1:ACCOUNT:key/SOME-UUID',
+        PlainText: Buffer.from('this-is-a-secret', 'utf8').toString('base64')
+      }));
+
+      util.testEndpointResponse(endpoint, 'POST', STATUS_CODES.OK, JSON.stringify(body), requiredHeaders, (err, res) => {
+        stub.called.should.be.false();
+        stub.reset();
         done();
       });
     });
