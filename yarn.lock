@@ -1454,7 +1454,7 @@ lodash.keys@^3.0.0:
     lodash.isarguments "^3.0.0"
     lodash.isarray "^3.0.0"
 
-lodash@^4.0.0, lodash@^4.3.0, lodash@^4.5.0, lodash@^4.8.2, lodash@~4.13.0:
+lodash@^4.0.0, lodash@^4.3.0, lodash@^4.5.0, lodash@^4.8.2:
   version "4.13.1"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.13.1.tgz#83e4b10913f48496d4d16fec4a560af2ee744b68"
 
@@ -1469,6 +1469,10 @@ lodash@~3.5.0:
 lodash@~4.11.1:
   version "4.11.2"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.11.2.tgz#d6b4338b110a58e21dae5cebcfdbbfd2bc4cdb3b"
+
+lodash@~4.17.5:
+  version "4.17.10"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
 log-driver@1.2.5:
   version "1.2.5"
