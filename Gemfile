@@ -5,7 +5,9 @@ gem 'aws-sdk', '~> 2.2'
 gem 'fpm', '~> 1.6'
 gem 'octokit', '~> 4.0'
 gem 'mime-types', '~> 3.1'
+gem 'rack', '>= 1.6.11'
+gem 'ffi', '>= 1.9.24'
 
 group :cookbook do
-  gem 'builderator', '~> 1.0'
+  gem 'builderator', :git => 'git@github.com:rapid7/builderator.git', :branch => 'upgrade-to-latest-chef-14'
 end
