@@ -1,0 +1,16 @@
+---
+info:
+  title: Tokend
+  description: A Node.js daemon that interfaces with Vault and Warden to provide a
+    secure method to deliver secrets to servers in the cloud.
+  x-cortex-git:
+    github:
+      alias: r7org
+      repository: rapid7/tokend
+  x-cortex-tag: tokend
+  x-cortex-type: service
+  x-cortex-domain-parents:
+  - tag: platform-delivery
+openapi: 3.0.1
+servers:
+- url: "/"
