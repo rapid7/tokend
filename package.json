@@ -34,7 +34,7 @@
     "lodash": "~4.17.5",
     "morgan": "~1.7.0",
     "nconf": "~0.8.4",
-    "node-vault": "^0.5.10",
+    "node-vault": "^0.6.0",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4",
     "uuid": "~3.0.1",
