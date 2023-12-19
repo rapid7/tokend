@@ -1,3 +1,7 @@
+Deprecated
+=========
+This repository is now deprecated. This project will not receive new changes from Rapid7.
+
 Tokend
 =========
 
